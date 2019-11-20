@@ -27,51 +27,30 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
-module ModelHelper
-  def self.models
-    ObjectSpace.each_object(Class).select do |klass|
-      klass.included_modules.include? Mongoid::Document
-    end
-  end
+class NodeSerializer
+  include JSONAPI::Serializer
+
+  has_one :cluster
+  has_many :groups
+
+  attribute :name
+  attribute :params
 end
 
-class Node
-  include Mongoid::Document
-
-  has_and_belongs_to_many :groups
-  belongs_to :cluster
-
-  validates :cluster, presence: true
-  validates :name, presence: true, uniqueness: { scope: :cluster }
-
-  index({ name: 1, cluster: 1 }, { unique: true })
-
-  field :name, type: String
-  field :params, type: Hash, default: {}
-end
-
-class Group
-  include Mongoid::Document
-
-  has_and_belongs_to_many :nodes
-
-  validates :name, presence: true, uniqueness: true
-
-  index({ name: 1 }, { unique: true })
-
-  field :name, type: String
-end
-
-class Cluster
-  include Mongoid::Document
+class GroupSerializer
+  include JSONAPI::Serializer
 
   has_many :nodes
 
-  validates :name, presence: true, uniqueness: true
+  attribute :name
+end
 
-  index({ name: 1 }, { unique: true })
+class ClusterSerializer
+  include JSONAPI::Serializer
 
-  field :name, type: String
-  field :params, type: Hash, default: {}
+  has_many :nodes
+
+  attribute :name
+  attribute :params
 end
 

@@ -49,11 +49,9 @@ task require: :require_bundler do
   # require 'config/initializers/figaro'
   require 'config/initializers/mongoid'
   require 'app/models'
-  # require 'app/nodeattr'
   # require 'app/token'
-  # require 'app/command'
   # require 'app/policies'
-  # require 'app/serializers'
+  require 'app/serializers'
   # require 'app'
 end
 
