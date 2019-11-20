@@ -27,52 +27,48 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
-task :require_bundler do
-  $: << __dir__
-  $: << File.join(__dir__, 'lib')
-  ENV['BUNDLE_GEMFILE'] ||= File.join(__dir__, 'Gemfile')
+require 'sinatra/jsonapi'
 
-  require 'rubygems'
-  require 'bundler'
+resource :nodes, pkre: /[[:alnum:]]+/ do
+  helpers do
+    def find(id)
+      Node.find(id)
+    end
+  end
 
-  raise <<~ERROR.chomp unless ENV['RACK_ENV']
-    Can not require the application because the RACK_ENV has not been set.
-    Please export the env to your environment and try again:
+  index do
+    Node.all
+  end
 
-    export RACK_ENV=production
-  ERROR
-
-  Bundler.require(:default, ENV['RACK_ENV'].to_sym)
+  show
 end
 
-task require: :require_bundler do
-  # require 'config/initializers/figaro'
-  require 'config/initializers/mongoid'
-  require 'app/models'
-  # require 'app/token'
-  # require 'app/policies'
-  require 'app/serializers'
-  require 'app'
+
+resource :groups, pkre: /[[:alnum:]]+/ do
+  helpers do
+    def find(id)
+      Group.find(id)
+    end
+  end
+
+  index do
+    Group.all
+  end
+
+  show
 end
 
-task console: :require do
-  binding.pry
-end
+resource :clusters, pkre: /[[:alnum:]]+/ do
+  helpers do
+    def find(id)
+      Cluster.find(id)
+    end
+  end
 
-# task 'token:admin' => :require do
-#   # puts User.new(admin: true).generate_jwt
-#   raise NotImplementedError
-# end
+  index do
+    Cluster.all
+  end
 
-task 'token:user' => :require do
-  puts Token.new.generate_jwt
-end
-
-task 'db:mongoid:create_indexes' => :require do
-  ModelHelper.models.each { |klass| klass.create_indexes  }
-end
-
-task 'db:mongoid:remove_indexes' => :require do
-  ModelHelper.models.each { |klass| klass.remove_indexes  }
+  show
 end
 
