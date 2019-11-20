@@ -27,7 +27,10 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
-require 'sinatra/jsonapi'
+require 'sinja/method_override'
+
+use Sinja::MethodOverride
+register Sinja
 
 resource :nodes, pkre: /[[:alnum:]]+/ do
   helpers do
@@ -42,7 +45,6 @@ resource :nodes, pkre: /[[:alnum:]]+/ do
 
   show
 end
-
 
 resource :groups, pkre: /[[:alnum:]]+/ do
   helpers do
