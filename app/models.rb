@@ -27,17 +27,39 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
-source "https://rubygems.org"
-
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
-
-gem 'activesupport'
-gem 'mongoid'
-gem 'rake'
-gem 'sinatra'
-gem 'sinja'
-
-group :development do
-  gem 'pry'
-  gem 'pry-byebug'
+module ModelHelper
+  def self.models
+    ObjectSpace.each_object(Class).select do |klass|
+      klass.included_modules.include? Mongoid::Document
+    end
+  end
 end
+
+class Node
+  include Mongoid::Document
+
+  has_and_belongs_to_many :groups
+  belongs_to :cluster
+
+  field :name, type: String
+  field :params, type: Hash, default: {}
+end
+
+class Group
+  include Mongoid::Document
+
+  has_and_belongs_to_many :nodes
+
+  field :name, type: String
+  field :params, type: Hash, default: {}
+end
+
+class Cluster
+  include Mongoid::Document
+
+  has_many :nodes
+
+  field :name, type: String
+  field :params, type: Hash, default: {}
+end
+

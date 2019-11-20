@@ -37,7 +37,7 @@ task :require_bundler do
 
   raise <<~ERROR.chomp unless ENV['RACK_ENV']
     Can not require the application because the RACK_ENV has not been set.
-    Please export the env to your enviroment and try again:
+    Please export the env to your environment and try again:
 
     export RACK_ENV=production
   ERROR
@@ -46,13 +46,13 @@ task :require_bundler do
 end
 
 task require: :require_bundler do
-  # require 'config/initializers/active_support'
   # require 'config/initializers/figaro'
+  require 'config/initializers/mongoid'
+  require 'app/models'
   # require 'app/nodeattr'
   # require 'app/token'
   # require 'app/command'
   # require 'app/policies'
-  # require 'app/models'
   # require 'app/serializers'
   # require 'app'
 end
@@ -68,5 +68,13 @@ end
 
 task 'token:user' => :require do
   puts Token.new.generate_jwt
+end
+
+task 'db:mongoid:create_indexes' => :require do
+  ModelHelper.models.each { |klass| klass.create_indexes  }
+end
+
+task 'db:mongoid:remove_indexes' => :require do
+  ModelHelper.models.each { |klass| klass.remove_indexes  }
 end
 

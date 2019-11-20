@@ -27,17 +27,18 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
-source "https://rubygems.org"
+# Load the Mongoid Config if it exists
+mongoid_config_path = File.expand_path('../mongoid.yml', __dir__)
+if File.exists? mongoid_config_path
+  Mongoid.load!(mongoid_config_path, Sinatra::Base.environment)
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
-
-gem 'activesupport'
-gem 'mongoid'
-gem 'rake'
-gem 'sinatra'
-gem 'sinja'
-
-group :development do
-  gem 'pry'
-  gem 'pry-byebug'
+# Otherwise connect to the db over localhost
+else
+  Mongoid.configure do |config|
+    config.clients.default = {
+      hosts: ['localhost:27017'],
+      database: "flight-nodeattr-#{Sinatra::Base.environment}"
+    }
+  end
 end
+
