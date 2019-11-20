@@ -19,7 +19,7 @@
 # details.
 #
 # You should have received a copy of the Eclipse Public License 2.0
-# along with Flight Cloud. If not, see:
+# along with Nodeattr Server. If not, see:
 #
 #  https://opensource.org/licenses/EPL-2.0
 #
