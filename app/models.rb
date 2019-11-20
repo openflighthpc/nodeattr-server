@@ -41,6 +41,11 @@ class Node
   has_and_belongs_to_many :groups
   belongs_to :cluster
 
+  validates :cluster, presence: true
+  validates :name, presence: true, uniqueness: { scope: :cluster }
+
+  index({ name: 1, cluster: 1 }, { unique: true })
+
   field :name, type: String
   field :params, type: Hash, default: {}
 end
@@ -50,6 +55,10 @@ class Group
 
   has_and_belongs_to_many :nodes
 
+  validates :name, presence: true, uniqueness: true
+
+  index({ name: 1 }, { unique: true })
+
   field :name, type: String
   field :params, type: Hash, default: {}
 end
@@ -58,6 +67,10 @@ class Cluster
   include Mongoid::Document
 
   has_many :nodes
+
+  validates :name, presence: true, uniqueness: true
+
+  index({ name: 1 }, { unique: true })
 
   field :name, type: String
   field :params, type: Hash, default: {}
