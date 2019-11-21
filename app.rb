@@ -50,6 +50,11 @@ resource :nodes, pkre: /[[:alnum:]]+/ do
     [node.id, node]
   end
 
+  update do |attr|
+    resource.update(**attr)
+    resource
+  end
+
   has_one :cluster do
     pluck { resource.cluster }
 
@@ -103,6 +108,16 @@ resource :groups, pkre: /[[:alnum:]]+/ do
 
   show
 
+  create do |attr|
+    group = Group.create(**attr)
+    [group.id, group]
+  end
+
+  # NOTE: Groups Currently can not be updated
+  # update do |attr|
+  #   resource.update(**attr)
+  # end
+
   has_many :nodes do
     fetch { resource.nodes }
   end
@@ -120,6 +135,16 @@ resource :clusters, pkre: /[[:alnum:]]+/ do
   end
 
   show
+
+  create do |attr|
+    cluster = Cluster.create(**attr)
+    [cluster.id, cluster]
+  end
+
+  update do |attr|
+    resource.update(**attr)
+    resource
+  end
 
   has_many :nodes do
     fetch { resource.nodes }
