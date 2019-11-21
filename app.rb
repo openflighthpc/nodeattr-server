@@ -60,6 +60,33 @@ resource :nodes, pkre: /[[:alnum:]]+/ do
 
   has_many :group do
     fetch { resource.groups }
+
+    merge(sideload_on: :create) do |rios|
+      new_groups = rios.map { |rio| Group.find(rio[:id]) }
+      resource.groups << new_groups
+      resource.save!
+      true
+    end
+
+    subtract do |rios|
+      ids = rios.map { |rio| rio[:id] }
+      resource.groups = resource.groups.reject { |g| ids.include?(g.id.to_s) }
+      resource.save!
+      true
+    end
+
+    replace(sideload_on: :update) do |rios|
+      groups = rios.map { |rio| Group.find(rio) }
+      resource.groups = groups
+      resource.save!
+      true
+    end
+
+    clear(sideload_on: :update) do
+      resource.groups = []
+      resource.save
+      true
+    end
   end
 end
 
