@@ -72,7 +72,6 @@ The API requires all requests to carry with a [jwt](https://jwt.io). Within the 
 
 The following `rake` tasks are used to generate tokens with 30 days expiry. Tokens from other sources will be accepted as long as they:
 1. Where signed with the same shared secret,
-2. Set either `user: true` or `admin: true` in the token body, and
 3. An [expiry claim](https://tools.ietf.org/html/rfc7519#section-4.1.4) has been made.
 
 As the shared secret is environment dependant, the `RACK_ENV` must be set within your environment.
@@ -80,9 +79,6 @@ As the shared secret is environment dependant, the `RACK_ENV` must be set within
 ```
 # Set the rack environment
 export RACK_ENV=production
-
-# Generate a admin token:
-rake token:admin
 
 # Generate a user token
 rake token:user
