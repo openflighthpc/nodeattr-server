@@ -39,9 +39,9 @@ class Node
   include Mongoid::Document
 
   has_and_belongs_to_many :groups
-  belongs_to :cluster
+  belongs_to :cluster, optional: true
 
-  validates :cluster, presence: true
+  #validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
 
   index({ name: 1, cluster: 1 }, { unique: true })
