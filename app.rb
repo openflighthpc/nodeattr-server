@@ -55,6 +55,8 @@ resource :nodes, pkre: /[[:alnum:]]+/ do
     resource
   end
 
+  destroy { resource.destroy }
+
   has_one :cluster do
     pluck { resource.cluster }
 
@@ -118,6 +120,8 @@ resource :groups, pkre: /[[:alnum:]]+/ do
   #   resource.update(**attr)
   # end
 
+  destroy { resource.destroy }
+
   has_many :nodes do
     fetch { resource.nodes }
   end
@@ -145,6 +149,8 @@ resource :clusters, pkre: /[[:alnum:]]+/ do
     resource.update(**attr)
     resource
   end
+
+  destroy { resource.destroy }
 
   has_many :nodes do
     fetch { resource.nodes }
