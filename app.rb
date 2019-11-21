@@ -32,6 +32,16 @@ require 'sinja/method_override'
 use Sinja::MethodOverride
 register Sinja
 
+helpers do
+  def transaction
+    Cluster.with_session do |session|
+      session.start_transaction
+      yield if block_given
+      session.commit_transaction
+    end
+  end
+end
+
 resource :nodes, pkre: /[[:alnum:]]+/ do
   helpers do
     def find(id)
