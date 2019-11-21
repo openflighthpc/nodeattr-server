@@ -54,6 +54,14 @@ resource :nodes, pkre: /[[:alnum:]]+/ do
   end
 
   show
+
+  has_one :cluster do
+    pluck { resource.cluster }
+  end
+
+  has_many :group do
+    fetch { resource.groups }
+  end
 end
 
 resource :groups, pkre: /[[:alnum:]]+/ do
@@ -68,6 +76,10 @@ resource :groups, pkre: /[[:alnum:]]+/ do
   end
 
   show
+
+  has_many :nodes do
+    fetch { resource.nodes }
+  end
 end
 
 resource :clusters, pkre: /[[:alnum:]]+/ do
@@ -82,5 +94,9 @@ resource :clusters, pkre: /[[:alnum:]]+/ do
   end
 
   show
+
+  has_many :nodes do
+    fetch { resource.nodes }
+  end
 end
 
