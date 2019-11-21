@@ -41,4 +41,5 @@ gem 'sinja'
 group :development do
   gem 'pry'
   gem 'pry-byebug'
+  gem 'rerun'
 end
