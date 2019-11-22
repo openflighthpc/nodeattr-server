@@ -37,9 +37,13 @@ resource :nodes, pkre: /[[:alnum:]]+/ do
     def find(id)
       Node.find(id)
     end
+
+    def filter(nodes, fields = {})
+      nodes.where(name: fields[:nodeattr])
+    end
   end
 
-  index do
+  index(filter_by: :nodeattr) do
     Node.all
   end
 
