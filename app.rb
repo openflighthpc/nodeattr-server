@@ -32,10 +32,18 @@ require 'sinja/method_override'
 use Sinja::MethodOverride
 register Sinja
 
-resource :nodes, pkre: /[[:alnum:]]+/ do
+COMPOUND_ID_REGEX = /\A([[:alnum:]]+)\.([[:alnum:]]+)\Z/
+
+resource :nodes, pkre: /[[:alnum:]]+(?:\.[[:alnum:]]+)?/ do
   helpers do
     def find(id)
-      Node.find(id)
+      if COMPOUND_ID_REGEX.match?(id)
+        matches = COMPOUND_ID_REGEX.match(id).captures
+        cluster = Cluster.where(name: matches.first).first
+        Node.where(cluster: cluster, name: matches.last).first
+      else
+        Node.find(id)
+      end
     end
 
     def filter(nodes, fields = {})
@@ -65,7 +73,9 @@ resource :nodes, pkre: /[[:alnum:]]+/ do
     pluck { resource.cluster }
 
     graft(sideload_on: :create) do |rio|
-      Cluster.find(rio[:id])
+      resource.cluster = Cluster.find(rio[:id])
+      resource.save
+      true
     end
   end
 
