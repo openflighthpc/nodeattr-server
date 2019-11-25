@@ -45,7 +45,7 @@ module HasFuzzyID
         cluster = Cluster.where(name: cluster_name).first
         where(cluster: cluster, name: name).first
       else
-        find(id)
+        where(id: id).first
       end
     end
   end

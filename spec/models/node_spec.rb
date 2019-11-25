@@ -64,6 +64,10 @@ RSpec.describe Node do
       subject.delete
       expect(described_class.find_by_fuzzy_id(fuzzy_id)).to be_nil
     end
+
+    it 'returns nil for garbage regular id strings' do
+      expect(described_class.find_by_fuzzy_id('garbage')).to be_nil
+    end
   end
 end
 
