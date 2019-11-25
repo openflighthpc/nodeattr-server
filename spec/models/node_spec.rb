@@ -45,14 +45,24 @@ RSpec.describe Node do
 
   describe '::find_by_fuzzy_id' do
     subject { create(:node) }
+    let!(:fuzzy_id) { "#{subject.cluster.name}.#{subject.name}" }
 
     it 'can find by id' do
       expect(described_class.find_by_fuzzy_id(subject.id.to_s)).to eq(subject)
     end
 
     it 'can find by <cluster>.<name>' do
-      fuzzy_id = "#{subject.cluster.name}.#{subject.name}"
       expect(described_class.find_by_fuzzy_id(fuzzy_id)).to eq(subject)
+    end
+
+    it 'returns nil if the cluster is missing' do
+      subject.cluster.delete
+      expect(described_class.find_by_fuzzy_id(fuzzy_id)).to be_nil
+    end
+
+    it 'returns nil if the node is missing' do
+      subject.delete
+      expect(described_class.find_by_fuzzy_id(fuzzy_id)).to be_nil
     end
   end
 end
