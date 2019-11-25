@@ -37,6 +37,9 @@ require 'rake'
 load File.expand_path('../Rakefile', __dir__)
 Rake::Task[:require].invoke
 
+# Purge the existing test db
+Mongoid.purge!
+
 require 'json'
 require 'hashie'
 

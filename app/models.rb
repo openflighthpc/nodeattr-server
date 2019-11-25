@@ -41,7 +41,6 @@ class Node
   has_and_belongs_to_many :groups
   belongs_to :cluster, optional: true
 
-  #validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
 
   index({ name: 1, cluster: 1 }, { unique: true })
@@ -56,11 +55,21 @@ class Group
   has_and_belongs_to_many :nodes
   belongs_to :cluster, optional: true
 
-  validates :name, presence: true, uniqueness: true
+  validates :name, presence: true, uniqueness: { scope: :cluster }
+  validate :validates_nodes_cluster
 
-  index({ name: 1 }, { unique: true })
+  index({ name: 1, cluster: 1 }, { unique: true })
 
   field :name, type: String
+
+  def validates_nodes_cluster
+    bad_nodes = nodes.reject { |n| n.cluster == cluster }
+    return if bad_nodes.empty?
+    errors.add :nodes_cluster, <<~MSG.squish
+      the following nodes are not in the same cluster as the group:
+      #{bad_nodes.map(&:name).join(',')}
+    MSG
+  end
 end
 
 class Cluster
