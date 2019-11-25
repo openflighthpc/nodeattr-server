@@ -143,6 +143,16 @@ resource :groups, pkre: GROUP_REGEX do
 
   destroy { resource.destroy }
 
+  has_one :cluster do
+    pluck { resource.cluster }
+
+    graft(sideload_on: :create) do |rio|
+      resource.cluster = Cluster.find(rio[:id])
+      resource.save!
+      true
+    end
+  end
+
   has_many :nodes do
     fetch { resource.nodes }
   end

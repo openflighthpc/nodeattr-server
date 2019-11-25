@@ -30,8 +30,9 @@
 require 'spec_helper'
 
 RSpec.describe '/groups' do
+  let!(:cluster) { Cluster.find_or_create_by(name: 'test-group-cluster') }
+
   describe 'GET show' do
-    let!(:cluster) { Cluster.find_or_create_by(name: 'test-group-cluster') }
     subject { Group.find_or_create_by(cluster: cluster, name: 'test-group') }
 
     let(:subject_named_url) { "/groups/#{cluster.name}.#{subject.name}" }
@@ -49,6 +50,37 @@ RSpec.describe '/groups' do
       get subject_id_url
       expect(last_response).to be_ok
       expect(parse_last_response_body.data.id).to eq(subject.id.to_s)
+    end
+  end
+
+  describe 'POST create' do
+    context 'without an existing entry' do
+      let(:name) { 'create-group-test' }
+
+      subject do
+        Group.where(cluster: cluster, name: 'create-group-test').first
+      end
+
+      let(:body) do
+        {
+          data: {
+            type: 'groups', attributes: { name: name },
+            relationships: {
+              cluster: { data: { type: 'clusters', id: cluster.id.to_s } }
+            }
+          }
+        }.to_json
+      end
+
+      before do
+        Group.where(name: name).delete
+        admin_headers
+        post '/groups', body
+      end
+
+      it 'creates the group' do
+        expect(subject).not_to be_nil
+      end
     end
   end
 end
