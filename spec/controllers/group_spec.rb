@@ -19,7 +19,7 @@
 # details.
 #
 # You should have received a copy of the Eclipse Public License 2.0
-# along with Nodeattr Server. If not, see:
+# along with Flight Cloud. If not, see:
 #
 #  https://opensource.org/licenses/EPL-2.0
 #
@@ -27,52 +27,28 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
-module ModelHelper
-  def self.models
-    ObjectSpace.each_object(Class).select do |klass|
-      klass.included_modules.include? Mongoid::Document
+require 'spec_helper'
+
+RSpec.describe '/groups' do
+  describe 'GET show' do
+    let!(:cluster) { Cluster.find_or_create_by(name: 'test-group-cluster') }
+    subject { Group.find_or_create_by(cluster: cluster, name: 'test-group') }
+
+    let(:subject_named_url) { "/groups/#{cluster.name}.#{subject.name}" }
+    let(:subject_id_url) { "/groups/#{subject.id.to_s}" }
+
+    it 'can be found by name' do
+      admin_headers
+      get subject_named_url
+      expect(last_response).to be_ok
+      expect(parse_last_response_body.data.id).to eq(subject.id.to_s)
+    end
+
+    it 'can be found by id' do
+      admin_headers
+      get subject_id_url
+      expect(last_response).to be_ok
+      expect(parse_last_response_body.data.id).to eq(subject.id.to_s)
     end
   end
 end
-
-class Node
-  include Mongoid::Document
-
-  has_and_belongs_to_many :groups
-  belongs_to :cluster, optional: true
-
-  #validates :cluster, presence: true
-  validates :name, presence: true, uniqueness: { scope: :cluster }
-
-  index({ name: 1, cluster: 1 }, { unique: true })
-
-  field :name, type: String
-  field :params, type: Hash, default: {}
-end
-
-class Group
-  include Mongoid::Document
-
-  has_and_belongs_to_many :nodes
-  belongs_to :cluster, optional: true
-
-  validates :name, presence: true, uniqueness: true
-
-  index({ name: 1 }, { unique: true })
-
-  field :name, type: String
-end
-
-class Cluster
-  include Mongoid::Document
-
-  has_many :nodes
-
-  validates :name, presence: true, uniqueness: true
-
-  index({ name: 1 }, { unique: true })
-
-  field :name, type: String
-  field :params, type: Hash, default: {}
-end
-

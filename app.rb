@@ -111,10 +111,17 @@ resource :nodes, pkre: /[[:alnum:]]+(?:\.[[:alnum:]]+)?/ do
   end
 end
 
-resource :groups, pkre: /[[:alnum:]]+/ do
+GROUP_REGEX = /(?:[\w-]+\.[\w-]+)|(?:\w+)/
+resource :groups, pkre: GROUP_REGEX do
   helpers do
     def find(id)
-      Group.find(id)
+      if id.include?('.')
+        cluster_name, group_name = id.split('.', 2)
+        cluster = Cluster.where(name: cluster_name).first
+        Group.where(cluster: cluster, name: group_name).first
+      else
+        Group.find(id)
+      end
     end
   end
 
