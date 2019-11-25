@@ -42,11 +42,21 @@ class Node
   belongs_to :cluster, optional: true
 
   validates :name, presence: true, uniqueness: { scope: :cluster }
+  validate :validates_groups_cluster
 
   index({ name: 1, cluster: 1 }, { unique: true })
 
   field :name, type: String
   field :params, type: Hash, default: {}
+
+  def validates_groups_cluster
+    bad_groups = groups.reject { |g| g.cluster == cluster }
+    return if bad_groups.empty?
+    errors.add :groups_cluster, <<~MSG.squish
+      the following groups are not in the same cluster as the node:
+      #{bad_groups.map(&:name).join(',')}
+    MSG
+  end
 end
 
 class Group

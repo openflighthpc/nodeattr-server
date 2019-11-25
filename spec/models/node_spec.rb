@@ -19,7 +19,7 @@
 # details.
 #
 # You should have received a copy of the Eclipse Public License 2.0
-# along with Nodeattr Server. If not, see:
+# along with Flight Cloud. If not, see:
 #
 #  https://opensource.org/licenses/EPL-2.0
 #
@@ -27,29 +27,20 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
-source "https://rubygems.org"
+RSpec.describe Node do
+  context 'when changing clusters with an existing group' do
+    let(:cluster) { create(:cluster) }
+    let(:group) { create(:group, cluster: cluster) }
+    subject { create(:node, cluster: cluster, groups: [group]) }
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+    before do
+      subject.cluster = create(:cluster)
+      subject.validate
+    end
 
-gem 'activesupport'
-gem 'figaro'
-gem 'hashie'
-gem 'jwt'
-gem 'mongoid'
-gem 'rake'
-gem 'puma'
-gem 'sinatra'
-gem 'sinja'
-
-group :development, :test do
-  gem 'pry'
-  gem 'pry-byebug'
-  gem 'rerun'
+    it 'is invalid' do
+      expect(subject).not_to be_valid
+    end
+  end
 end
 
-group :test do
-  gem 'rack-test'
-  gem 'rspec'
-  gem 'rspec-collection_matchers'
-  gem 'factory_bot'
-end

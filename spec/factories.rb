@@ -27,29 +27,20 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
-source "https://rubygems.org"
+FactoryBot.define do
+  factory :node do
+    cluster
+    groups { [] }
+    sequence(:name) { |n| "factory_bot-node#{n}" }
+  end
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+  factory :group do
+    cluster
+    nodes { [] }
+    sequence(:name) { |n| "factory_bot-group#{n}" }
+  end
 
-gem 'activesupport'
-gem 'figaro'
-gem 'hashie'
-gem 'jwt'
-gem 'mongoid'
-gem 'rake'
-gem 'puma'
-gem 'sinatra'
-gem 'sinja'
-
-group :development, :test do
-  gem 'pry'
-  gem 'pry-byebug'
-  gem 'rerun'
-end
-
-group :test do
-  gem 'rack-test'
-  gem 'rspec'
-  gem 'rspec-collection_matchers'
-  gem 'factory_bot'
+  factory :cluster do
+    sequence(:name) { |n| "factory_bot-cluster#{n}" }
+  end
 end

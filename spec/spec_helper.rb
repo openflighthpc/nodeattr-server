@@ -19,17 +19,13 @@
 # details.
 #
 # You should have received a copy of the Eclipse Public License 2.0
-# along with Flight Cloud. If not, see:
+# along with Nodeattr Server. If not, see:
 #
 #  https://opensource.org/licenses/EPL-2.0
 #
 # For more information on Nodeattr Server, please visit:
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
-
-require 'rack/test'
-require 'rspec'
-require 'rspec/collection_matchers'
 
 ENV['RACK_ENV'] = 'test'
 
@@ -54,6 +50,12 @@ end
 RSpec.configure do |c|
 	# Include the Sinatra helps into the application
 	c.include RSpecSinatraMixin
+
+  c.include FactoryBot::Syntax::Methods
+
+  c.before(:suite) do
+    FactoryBot.find_definitions
+  end
 
   def admin_headers
     header 'Content-Type', 'application/vnd.api+json'

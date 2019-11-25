@@ -28,19 +28,17 @@
 #===============================================================================
 
 RSpec.describe Group do
-  context 'without any groups' do
-    let(:cluster) { Cluster.find_or_create_by(name: 'test-group') }
-    let(:other_cluster) { Cluster.find_or_create_by(name: 'other-test-group') }
+  context 'when changing a groups cluster with an existing node' do
+    let(:cluster) { create(:cluster) }
+    let(:node) { create(:node, cluster: cluster) }
+    subject { create(:group, cluster: cluster, nodes: [node]) }
 
-    let(:other_node) { Node.find_or_create_by(name: 'test-node', cluster: other_cluster) }
-
-    subject do
-      described_class.find_or_create_by(name: 'test-group', cluster: cluster)
+    before do
+      subject.cluster = create(:cluster)
+      subject.validate
     end
 
-    it 'can not have a node in a different group' do
-      subject.nodes << other_node
-      subject.validate
+    it 'is in valid' do
       expect(subject).not_to be_valid
     end
   end
