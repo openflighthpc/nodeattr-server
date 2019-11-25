@@ -42,5 +42,18 @@ RSpec.describe Node do
       expect(subject).not_to be_valid
     end
   end
+
+  describe '::find_by_fuzzy_id' do
+    subject { create(:node) }
+
+    it 'can find by id' do
+      expect(described_class.find_by_fuzzy_id(subject.id.to_s)).to eq(subject)
+    end
+
+    it 'can find by <cluster>.<name>' do
+      fuzzy_id = "#{subject.cluster.name}.#{subject.name}"
+      expect(described_class.find_by_fuzzy_id(fuzzy_id)).to eq(subject)
+    end
+  end
 end
 
