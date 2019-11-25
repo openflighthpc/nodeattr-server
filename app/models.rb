@@ -35,18 +35,26 @@ module ModelHelper
   end
 end
 
+module HasFuzzyID
+  extend ActiveSupport::Concern
+
+  class_methods do
+    def find_by_fuzzy_id(id)
+      if id.include? '.'
+        cluster_name, name = id.split('.', 2)
+        cluster = Cluster.where(name: cluster_name).first
+        where(cluster: cluster, name: name).first
+      else
+        find(id)
+      end
+    end
+  end
+end
+
 class Node
   include Mongoid::Document
 
-  def self.find_by_fuzzy_id(id)
-    if id.include? '.'
-      cluster_name, name = id.split('.', 2)
-      cluster = Cluster.where(name: cluster_name).first
-      Node.where(cluster: cluster, name: name).first
-    else
-      find(id)
-    end
-  end
+  include HasFuzzyID
 
   has_and_belongs_to_many :groups
   belongs_to :cluster, optional: true
@@ -71,6 +79,8 @@ end
 
 class Group
   include Mongoid::Document
+
+  include HasFuzzyID
 
   has_and_belongs_to_many :nodes
   belongs_to :cluster, optional: true
