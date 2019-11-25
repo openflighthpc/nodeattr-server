@@ -19,7 +19,7 @@
 # details.
 #
 # You should have received a copy of the Eclipse Public License 2.0
-# along with Nodeattr Server. If not, see:
+# along with Flight Cloud. If not, see:
 #
 #  https://opensource.org/licenses/EPL-2.0
 #
@@ -27,29 +27,27 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
-source "https://rubygems.org"
+require 'spec_helper'
 
-git_source(:github) {|repo_name| "https://github.com/#{repo_name}" }
+RSpec.describe '/clusters' do
+  describe 'GET show' do
+    subject { Cluster.find_or_create_by(name: 'test-cluster') }
 
-gem 'activesupport'
-gem 'figaro'
-gem 'hashie'
-gem 'jwt'
-gem 'mongoid'
-gem 'rake'
-gem 'puma'
-gem 'sinatra'
-gem 'sinja'
+    let(:subject_named_url) { "/clusters/.#{subject.name}" }
+    let(:subject_id_url) { "/clusters/#{subject.id.to_s}" }
 
-group :development, :test do
-  gem 'pry'
-  gem 'pry-byebug'
-  gem 'rerun'
+    it 'can find the cluster by name' do
+      admin_headers
+      get subject_named_url
+      expect(last_response).to be_ok
+      expect(parse_last_response_body.data.id).to eq(subject.id.to_s)
+    end
 
-end
-
-group :test do
-  gem 'rack-test'
-  gem 'rspec'
-  gem 'rspec-collection_matchers'
+    it 'can find the cluster by id' do
+      admin_headers
+      get subject_id_url
+      expect(last_response).to be_ok
+      expect(parse_last_response_body.data.id).to eq(subject.id.to_s)
+    end
+  end
 end

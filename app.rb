@@ -141,10 +141,16 @@ resource :groups, pkre: /[[:alnum:]]+/ do
   end
 end
 
-resource :clusters, pkre: /[[:alnum:]]+/ do
+cluster_name = /\.[\w-]+/
+cluster_id = /[a-zA-Z0-9]+/
+resource :clusters, pkre: /#{cluster_name}|#{cluster_id}/ do
   helpers do
     def find(id)
-      Cluster.find(id)
+      if id.first == '.'
+        Cluster.where(name: id[1..-1]).first
+      else
+        Cluster.find(id)
+      end
     end
   end
 
