@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/openflighthpc/nodeattr-server.svg?branch=master)](https://travis-ci.org/openflighthpc/nodeattr-server)
+
 # Nodeattr Server
 
 Shared micro-service for storing data about about clusters/groups/nodes
