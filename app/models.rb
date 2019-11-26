@@ -106,6 +106,7 @@ class Cluster
   include Mongoid::Document
 
   has_many :nodes
+  has_many :groups
 
   validates :name, presence: true, uniqueness: true
 
