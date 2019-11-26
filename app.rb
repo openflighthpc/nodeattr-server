@@ -77,8 +77,8 @@ resource :nodes, pkre: /[[:alnum:]]+(?:\.[[:alnum:]]+)?/ do
     fetch { resource.groups }
 
     merge(sideload_on: :create) do |rios|
-      new_groups = rios.map { |rio| Group.find(rio[:id]) }
-      resource.groups << new_groups
+      defer unless resource.cluster
+      resource.groups << rios.map { |rio| Group.find_by_fuzzy_id(rio[:id]) }
       resource.save!
       true
     end

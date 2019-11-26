@@ -77,49 +77,28 @@ RSpec.configure do |c|
     Hashie::Mash.new(JSON.parse(last_response.body))
   end
 
-  def serialize_model(model)
-    JSONAPI::Serializer.serialize(model, is_collection: false)
-  end
-end
-
-RSpec.shared_context 'with_system_path_subject' do
-  subject { read_subject }
-
-  def subject_inputs
-    ["test-subject_#{described_class.type}"]
+  def build_rio(model, fuzzy: true)
+    type = JSONAPI::Serializer.find_serializer(model, {}).type
+    { type: type, id: (fuzzy ? model.fuzzy_id : model.id) }
   end
 
-  def subject_api_path(*a)
-    File.join('/', described_class.type, subject_inputs.join('.'), *a)
-  end
-
-  def read_subject
-    described_class.read(*subject_inputs)
-  end
-
-  def create_subject_and_system_path
-    described_class.create(*subject_inputs) do |meta|
-      FileUtils.mkdir_p File.dirname(meta.system_path)
-      FileUtils.touch meta.system_path
+  def build_payload(model, relationships: {}, fuzzy: true)
+    serializer = JSONAPI::Serializer.find_serializer(model, {})
+    attributes = JSONAPI::Serializer.serialize(model, is_collection: false)['data']['attributes']
+    rel_hash = relationships.each_with_object({}) do |(key, entity), hash|
+      hash[key] = { data: nil }
+      hash[key][:data] = if entity.is_a? Array
+        entity.map { |e| build_rio(e, fuzzy: fuzzy) }
+      else
+        build_rio(entity, fuzzy: fuzzy)
+      end
     end
-  end
-
-  def expect_forbidden
-    expect(last_response.status).to be(403)
-  end
-
-  def subject_api_body(payload: nil)
-      <<~APIJSON
-        {
-          "data": {
-            "type": "#{described_class.type}",
-            "id": "#{subject_inputs.join('.')}",
-            "attributes": {
-              #{ "\"payload\": \"#{payload}\"" if payload}
-            }
-          }
-        }
-      APIJSON
+    {
+      data: {
+        type: serializer.type,
+        attributes: attributes,
+        relationships: rel_hash
+      }
+    }
   end
 end
-
