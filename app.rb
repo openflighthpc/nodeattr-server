@@ -129,6 +129,13 @@ resource :groups, pkre: GROUP_REGEX do
       resource.save!
       true
     end
+
+    subtract do |rios|
+      remove_nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
+      resource.nodes = resource.nodes - remove_nodes
+      resource.save!
+      true
+    end
   end
 end
 

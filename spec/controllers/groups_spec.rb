@@ -98,38 +98,60 @@ RSpec.describe '/groups' do
   shared_context 'with existing group and nodes' do
     let(:cluster) { create(:cluster) }
     let(:old_nodes) { (0..2).map { |_| create(:node, cluster: cluster) } }
-    let(:new_node) { create(:node, name: 'new-node', cluster: cluster) }
+    let(:new_nodes) { (0..2).map { |_| create(:node, cluster: cluster) } }
+    let(:relationship_path) { path(subject.fuzzy_id, 'relationships', 'nodes') }
+    let(:original_nodes) { raise 'original_nodes must be overridden' }
     let(:payload) do
-      { data: [build_rio(new_node)] }
+      { data: new_nodes.map { |n| build_rio(n) } }
     end
-    subject { create(:group, cluster: cluster, nodes: old_nodes) }
+    subject { create(:group, cluster: cluster, nodes: original_nodes) }
   end
 
   context 'when adding an additional node to a group' do
     include_context 'with existing group and nodes'
 
+    let(:original_nodes) { old_nodes }
+
     before do
       admin_headers
-      post path(subject.fuzzy_id, 'relationships', 'nodes'), payload.to_json
+      post relationship_path, payload.to_json
       subject.reload
     end
 
     it 'adds the new node to the existing nodes' do
-      expect(subject.nodes).to contain_exactly(new_node, *old_nodes)
+      expect(subject.nodes).to contain_exactly(*new_nodes, *old_nodes)
     end
   end
 
   context 'when replacing the nodes within a group' do
     include_context 'with existing group and nodes'
 
+    let(:original_nodes) { old_nodes }
+
     before do
       admin_headers
-      patch path(subject.fuzzy_id, 'relationships', 'nodes'), payload.to_json
+      patch relationship_path, payload.to_json
       subject.reload
     end
 
     it 'only has the new node' do
-      expect(subject.nodes).to contain_exactly(new_node)
+      expect(subject.nodes).to contain_exactly(*new_nodes)
+    end
+  end
+
+  context 'when removing nodes from the group' do
+    include_context 'with existing group and nodes'
+
+    let(:original_nodes) { [*old_nodes, *new_nodes] }
+
+    before do
+      admin_headers
+      delete relationship_path, payload.to_json
+      subject.reload
+    end
+
+    it 'only has the old_nodes' do
+      expect(subject.nodes).to contain_exactly(*old_nodes)
     end
   end
 end
