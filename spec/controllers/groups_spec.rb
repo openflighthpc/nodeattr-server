@@ -56,6 +56,22 @@ RSpec.describe '/groups' do
     end
   end
 
+  context 'when making a request with a params attribute' do
+    it 'returns bad request on create' do
+      group = build(:group)
+      admin_headers
+      post path, build_payload(group, attributes: { params: {} }).to_json
+      expect(last_response).to be_bad_request
+    end
+
+    it 'returns bad request on update' do
+      group = create(:group)
+      admin_headers
+      patch path(group.fuzzy_id), build_payload(group, attributes: { params: {} }).to_json
+      expect(last_response).to be_bad_request
+    end
+  end
+
   context 'when creating a group with a cluster by fuzzy id' do
     let(:cluster) { create(:cluster) }
     let(:attributes) { { name: subject.name } }

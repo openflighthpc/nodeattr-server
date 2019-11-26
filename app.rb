@@ -34,6 +34,15 @@ register Sinja
 
 COMPOUND_ID_REGEX = /\A([[:alnum:]]+)\.([[:alnum:]]+)\Z/
 
+helpers do
+  def updatable(**attr)
+    raise Sinja::BadRequestError, <<~ERROR.squish if attr.include?(:params)
+      The 'params' attribute can not be set directly. Please set the 'level_params' instead!
+    ERROR
+    attr
+  end
+end
+
 resource :nodes, pkre: /[[:alnum:]]+(?:\.[[:alnum:]]+)?/ do
   helpers do
     def find(id)
@@ -93,12 +102,12 @@ resource :groups, pkre: GROUP_REGEX do
   show
 
   create do |attr|
-    group = Group.create(**attr)
+    group = Group.create(**updatable(**attr))
     [group.id, group]
   end
 
   update do |attr|
-    resource.update(**attr)
+    resource.update(**updatable(attr))
   end
 
   destroy { resource.destroy }

@@ -97,7 +97,10 @@ RSpec.configure do |c|
         type: serializer.type,
         attributes: attributes,
         relationships: rel_hash
-      }
+      }.tap do |hash|
+        next unless model.class.where(id: model.id.to_s).any?
+        hash[:id] = fuzzy ? model.fuzzy_id : model.id
+      end
     }
   end
 end
