@@ -37,13 +37,7 @@ COMPOUND_ID_REGEX = /\A([[:alnum:]]+)\.([[:alnum:]]+)\Z/
 resource :nodes, pkre: /[[:alnum:]]+(?:\.[[:alnum:]]+)?/ do
   helpers do
     def find(id)
-      if COMPOUND_ID_REGEX.match?(id)
-        matches = COMPOUND_ID_REGEX.match(id).captures
-        cluster = Cluster.where(name: matches.first).first
-        Node.where(cluster: cluster, name: matches.last).first
-      else
-        Node.find(id)
-      end
+      NODE.find_by_fuzzy_id(id)
     end
 
     def filter(nodes, fields = {})
@@ -115,13 +109,7 @@ GROUP_REGEX = /(?:[\w-]+\.[\w-]+)|(?:\w+)/
 resource :groups, pkre: GROUP_REGEX do
   helpers do
     def find(id)
-      if id.include?('.')
-        cluster_name, group_name = id.split('.', 2)
-        cluster = Cluster.where(name: cluster_name).first
-        Group.where(cluster: cluster, name: group_name).first
-      else
-        Group.find(id)
-      end
+      Group.find_by_fuzzy_id(id)
     end
   end
 
@@ -163,11 +151,7 @@ cluster_id = /[a-zA-Z0-9]+/
 resource :clusters, pkre: /#{cluster_name}|#{cluster_id}/ do
   helpers do
     def find(id)
-      if id.first == '.'
-        Cluster.where(name: id[1..-1]).first
-      else
-        Cluster.find(id)
-      end
+      Cluster.find_by_fuzzy_id(id)
     end
   end
 
