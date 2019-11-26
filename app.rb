@@ -123,6 +123,12 @@ resource :groups, pkre: GROUP_REGEX do
       resource.save!
       true
     end
+
+    replace do |rios|
+      resource.nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
+      resource.save!
+      true
+    end
   end
 end
 

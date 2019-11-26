@@ -95,7 +95,7 @@ RSpec.describe '/groups' do
     end
   end
 
-  context 'when adding an additional node to a group' do
+  shared_context 'with existing group and nodes' do
     let(:cluster) { create(:cluster) }
     let(:old_nodes) { (0..2).map { |_| create(:node, cluster: cluster) } }
     let(:new_node) { create(:node, name: 'new-node', cluster: cluster) }
@@ -103,16 +103,33 @@ RSpec.describe '/groups' do
       { data: [build_rio(new_node)] }
     end
     subject { create(:group, cluster: cluster, nodes: old_nodes) }
+  end
+
+  context 'when adding an additional node to a group' do
+    include_context 'with existing group and nodes'
 
     before do
       admin_headers
       post path(subject.fuzzy_id, 'relationships', 'nodes'), payload.to_json
       subject.reload
-      new_node.reload
     end
 
     it 'adds the new node to the existing nodes' do
       expect(subject.nodes).to contain_exactly(new_node, *old_nodes)
+    end
+  end
+
+  context 'when replacing the nodes within a group' do
+    include_context 'with existing group and nodes'
+
+    before do
+      admin_headers
+      patch path(subject.fuzzy_id, 'relationships', 'nodes'), payload.to_json
+      subject.reload
+    end
+
+    it 'only has the new node' do
+      expect(subject.nodes).to contain_exactly(new_node)
     end
   end
 end
