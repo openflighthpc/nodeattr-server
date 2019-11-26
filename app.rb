@@ -37,9 +37,11 @@ COMPOUND_ID_REGEX = /\A([[:alnum:]]+)\.([[:alnum:]]+)\Z/
 helpers do
   def updatable(**attr)
     raise Sinja::BadRequestError, <<~ERROR.squish if attr.include?(:params)
-      The 'params' attribute can not be set directly. Please set the 'level_params' instead!
+      The 'params' attribute can not be set directly. Please set the 'level-params' instead!
     ERROR
-    attr
+    [:name, :level_params].each_with_object({}) do |key, memo|
+      memo[key] = attr[key] if attr.key?(key)
+    end
   end
 end
 
