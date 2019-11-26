@@ -67,7 +67,7 @@ resource :nodes, pkre: /[[:alnum:]]+(?:\.[[:alnum:]]+)?/ do
     pluck { resource.cluster }
 
     graft(sideload_on: :create) do |rio|
-      resource.cluster = Cluster.find(rio[:id])
+      resource.cluster = Cluster.find_by_fuzzy_id(rio[:id])
       resource.save
       true
     end

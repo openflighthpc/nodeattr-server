@@ -76,6 +76,10 @@ RSpec.configure do |c|
   def parse_last_response_body
     Hashie::Mash.new(JSON.parse(last_response.body))
   end
+
+  def serialize_model(model)
+    JSONAPI::Serializer.serialize(model, is_collection: false)
+  end
 end
 
 RSpec.shared_context 'with_system_path_subject' do
