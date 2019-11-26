@@ -97,10 +97,9 @@ resource :groups, pkre: GROUP_REGEX do
     [group.id, group]
   end
 
-  # NOTE: Groups Currently can not be updated
-  # update do |attr|
-  #   resource.update(**attr)
-  # end
+  update do |attr|
+    resource.update(**attr)
+  end
 
   destroy { resource.destroy }
 
