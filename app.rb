@@ -136,6 +136,12 @@ resource :groups, pkre: GROUP_REGEX do
       resource.save!
       true
     end
+
+    clear do
+      resource.nodes = []
+      resource.save!
+      true
+    end
   end
 end
 

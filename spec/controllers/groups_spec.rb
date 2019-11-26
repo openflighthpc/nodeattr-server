@@ -154,4 +154,20 @@ RSpec.describe '/groups' do
       expect(subject.nodes).to contain_exactly(*old_nodes)
     end
   end
+
+  context 'when clearing nodes from a group' do
+    include_context 'with existing group and nodes'
+
+    let(:original_nodes) { old_nodes }
+
+    before do
+      admin_headers
+      patch relationship_path, { data: [] }.to_json
+      subject.reload
+    end
+
+    it 'has no nodes' do
+      expect(subject.nodes).to be_empty
+    end
+  end
 end
