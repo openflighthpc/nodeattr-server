@@ -116,6 +116,13 @@ resource :groups, pkre: GROUP_REGEX do
 
   has_many :nodes do
     fetch { resource.nodes }
+
+    merge(sideload_on: :create) do |rios|
+      defer unless resource.cluster
+      resource.nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
+      resource.save!
+      true
+    end
   end
 end
 

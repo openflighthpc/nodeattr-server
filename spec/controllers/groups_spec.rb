@@ -72,4 +72,26 @@ RSpec.describe '/groups' do
       expect(Group.where(name: subject.name, cluster: cluster).first).not_to be_nil
     end
   end
+
+  context 'when creating a group with nodes by fuzzy id' do
+    let(:cluster) { create(:cluster) }
+    let(:nodes) do
+      (0..10).map { |_| create(:node, cluster: cluster) }
+    end
+    let(:payload) do
+      rels = { nodes: nodes, cluster: cluster }
+      build_payload(subject, relationships: rels)
+    end
+    subject { build(:group, cluster: nil) }
+
+    before do
+      admin_headers
+      post path, payload.to_json
+    end
+
+    it 'adds the nodes to the group' do
+      group = Group.where(name: subject.name, cluster: cluster).first
+      expect(group.nodes).to contain_exactly(*nodes)
+    end
+  end
 end

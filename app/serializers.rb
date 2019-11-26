@@ -40,6 +40,7 @@ end
 class GroupSerializer
   include JSONAPI::Serializer
 
+  has_one :cluster
   has_many :nodes
 
   attribute :name
