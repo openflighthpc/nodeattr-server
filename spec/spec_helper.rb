@@ -42,7 +42,7 @@ require 'hashie'
 module RSpecSinatraMixin
   include Rack::Test::Methods
   def app()
-    app = Sinatra::Application.new
+    Sinatra::Application.new
   end
 end
 
