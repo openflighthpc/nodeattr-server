@@ -49,6 +49,10 @@ module HasFuzzyID
       end
     end
   end
+
+  def fuzzy_id
+    "#{cluster.name}.#{name}"
+  end
 end
 
 class Node
@@ -122,5 +126,9 @@ class Cluster
 
   field :name, type: String
   field :params, type: Hash, default: {}
+
+  def fuzzy_id
+    ".#{name}"
+  end
 end
 
