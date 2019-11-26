@@ -29,7 +29,7 @@
 
 require 'spec_helper'
 
-RSpec.describe Node do
+RSpec.describe Cluster do
   context 'when adding a group in a different cluster' do
     let(:other_cluster) { create(:cluster) }
     let(:group) { create(:group, cluster: other_cluster) }
@@ -68,31 +68,26 @@ RSpec.describe Node do
     end
   end
 
-  # describe '::find_by_fuzzy_id' do
-  #   subject { create(:node) }
-  #   let!(:fuzzy_id) { "#{subject.cluster.name}.#{subject.name}" }
+  describe '::find_by_fuzzy_id' do
+    subject { create(:cluster) }
+    let!(:fuzzy_id) { ".#{subject.name}" }
 
-  #   it 'can find by id' do
-  #     expect(described_class.find_by_fuzzy_id(subject.id.to_s)).to eq(subject)
-  #   end
+    it 'can find by id' do
+      expect(described_class.find_by_fuzzy_id(subject.id.to_s)).to eq(subject)
+    end
 
-  #   it 'can find by <cluster>.<name>' do
-  #     expect(described_class.find_by_fuzzy_id(fuzzy_id)).to eq(subject)
-  #   end
+    it 'can find by .<name>' do
+      expect(described_class.find_by_fuzzy_id(fuzzy_id)).to eq(subject)
+    end
 
-  #   it 'returns nil if the cluster is missing' do
-  #     subject.cluster.delete
-  #     expect(described_class.find_by_fuzzy_id(fuzzy_id)).to be_nil
-  #   end
+    it 'returns nil if the cluster is missing' do
+      subject.delete
+      expect(described_class.find_by_fuzzy_id(fuzzy_id)).to be_nil
+    end
 
-  #   it 'returns nil if the node is missing' do
-  #     subject.delete
-  #     expect(described_class.find_by_fuzzy_id(fuzzy_id)).to be_nil
-  #   end
-
-  #   it 'returns nil for garbage regular id strings' do
-  #     expect(described_class.find_by_fuzzy_id('garbage')).to be_nil
-  #   end
-  # end
+    it 'returns nil for garbage regular id strings' do
+      expect(described_class.find_by_fuzzy_id('garbage')).to be_nil
+    end
+  end
 end
 

@@ -105,6 +105,14 @@ end
 class Cluster
   include Mongoid::Document
 
+  def self.find_by_fuzzy_id(id)
+    if id.first == '.'
+      Cluster.where(name: id[1..-1]).first
+    else
+      where(id: id).first
+    end
+  end
+
   has_many :nodes
   has_many :groups
 
