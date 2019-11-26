@@ -94,4 +94,25 @@ RSpec.describe '/groups' do
       expect(group.nodes).to contain_exactly(*nodes)
     end
   end
+
+  context 'when adding an additional node to a group' do
+    let(:cluster) { create(:cluster) }
+    let(:old_nodes) { (0..2).map { |_| create(:node, cluster: cluster) } }
+    let(:new_node) { create(:node, name: 'new-node', cluster: cluster) }
+    let(:payload) do
+      { data: [build_rio(new_node)] }
+    end
+    subject { create(:group, cluster: cluster, nodes: old_nodes) }
+
+    before do
+      admin_headers
+      post path(subject.fuzzy_id, 'relationships', 'nodes'), payload.to_json
+      subject.reload
+      new_node.reload
+    end
+
+    it 'adds the new node to the existing nodes' do
+      expect(subject.nodes).to contain_exactly(new_node, *old_nodes)
+    end
+  end
 end
