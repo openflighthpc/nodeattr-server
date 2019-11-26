@@ -30,6 +30,26 @@
 require 'spec_helper'
 
 RSpec.describe '/clusters' do
+  def path(*a)
+    File.join('/clusters', *a)
+  end
+
+  context 'when making a request with a params attribute' do
+    it 'returns bad request on create' do
+      cluster = build(:cluster)
+      admin_headers
+      post path, build_payload(cluster, attributes: { params: {} }).to_json
+      expect(last_response).to be_bad_request
+    end
+
+    it 'returns bad request on update' do
+      cluster = create(:cluster)
+      admin_headers
+      patch path(cluster.fuzzy_id), build_payload(cluster, attributes: { params: {} }).to_json
+      expect(last_response).to be_bad_request
+    end
+  end
+
   describe 'GET show' do
     subject { Cluster.find_or_create_by(name: 'test-cluster') }
 

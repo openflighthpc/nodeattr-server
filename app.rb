@@ -43,10 +43,11 @@ helpers do
   end
 end
 
-resource :nodes, pkre: /[[:alnum:]]+(?:\.[[:alnum:]]+)?/ do
+PKRE_REGEX = /(?:[a-zA-Z0-9]+)|(?:[\w-]+\.[\w-]+)/
+resource :nodes, pkre: PKRE_REGEX do
   helpers do
     def find(id)
-      NODE.find_by_fuzzy_id(id)
+      Node.find_by_fuzzy_id(id)
     end
 
     def filter(nodes, fields = {})
@@ -61,12 +62,12 @@ resource :nodes, pkre: /[[:alnum:]]+(?:\.[[:alnum:]]+)?/ do
   show
 
   create do |attr|
-    node = Node.create(**attr)
+    node = Node.create(**updatable(attr))
     [node.id, node]
   end
 
   update do |attr|
-    resource.update(**attr)
+    resource.update(**updatable(attr))
     resource
   end
 
@@ -87,8 +88,7 @@ resource :nodes, pkre: /[[:alnum:]]+(?:\.[[:alnum:]]+)?/ do
   end
 end
 
-GROUP_REGEX = /(?:[\w-]+\.[\w-]+)|(?:\w+)/
-resource :groups, pkre: GROUP_REGEX do
+resource :groups, pkre: PKRE_REGEX do
   helpers do
     def find(id)
       Group.find_by_fuzzy_id(id)
@@ -153,9 +153,7 @@ resource :groups, pkre: GROUP_REGEX do
   end
 end
 
-cluster_name = /\.[\w-]+/
-cluster_id = /[a-zA-Z0-9]+/
-resource :clusters, pkre: /#{cluster_name}|#{cluster_id}/ do
+resource :clusters, pkre: /(?:[a-zA-Z0-9]+)|(?:\.[\w-]+)/ do
   helpers do
     def find(id)
       Cluster.find_by_fuzzy_id(id)
@@ -169,12 +167,12 @@ resource :clusters, pkre: /#{cluster_name}|#{cluster_id}/ do
   show
 
   create do |attr|
-    cluster = Cluster.create(**attr)
+    cluster = Cluster.create(**updatable(attr))
     [cluster.id, cluster]
   end
 
   update do |attr|
-    resource.update(**attr)
+    resource.update(**updatable(attr))
     resource
   end
 

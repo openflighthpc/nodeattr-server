@@ -34,6 +34,22 @@ RSpec.describe '/nodes' do
     File.join('/nodes', *a)
   end
 
+  context 'when making a request with a params attribute' do
+    it 'returns bad request on create' do
+      node = build(:node)
+      admin_headers
+      post path, build_payload(node, attributes: { params: {} }).to_json
+      expect(last_response).to be_bad_request
+    end
+
+    it 'returns bad request on update' do
+      node = create(:node)
+      admin_headers
+      patch path(node.fuzzy_id), build_payload(node, attributes: { params: {} }).to_json
+      expect(last_response).to be_bad_request
+    end
+  end
+
   context 'when grafting a cluster by fuzzy id on create' do
     let(:cluster) { create(:cluster) }
     let(:attributes) { { name: subject.name } }
