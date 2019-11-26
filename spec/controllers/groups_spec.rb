@@ -30,11 +30,14 @@
 require 'spec_helper'
 
 RSpec.describe '/groups' do
-  let!(:cluster) { Cluster.find_or_create_by(name: 'test-group-cluster') }
+  def path(*a)
+    File.join('/groups', *a)
+  end
 
   describe 'GET show' do
     subject { Group.find_or_create_by(cluster: cluster, name: 'test-group') }
 
+    let!(:cluster) { Cluster.find_or_create_by(name: 'test-group-cluster') }
     let(:subject_named_url) { "/groups/#{cluster.name}.#{subject.name}" }
     let(:subject_id_url) { "/groups/#{subject.id.to_s}" }
 
@@ -53,34 +56,20 @@ RSpec.describe '/groups' do
     end
   end
 
-  describe 'POST create' do
-    context 'without an existing entry' do
-      let(:name) { 'create-group-test' }
+  context 'when creating a group with a cluster by fuzzy id' do
+    let(:cluster) { create(:cluster) }
+    let(:payload) do
+      build_payload(subject, relationships: { cluster: cluster })
+    end
+    subject { build(:group, cluster: nil) }
 
-      subject do
-        Group.where(cluster: cluster, name: 'create-group-test').first
-      end
+    before do
+      admin_headers
+      post path, payload.to_json
+    end
 
-      let(:body) do
-        {
-          data: {
-            type: 'groups', attributes: { name: name },
-            relationships: {
-              cluster: { data: { type: 'clusters', id: cluster.id.to_s } }
-            }
-          }
-        }.to_json
-      end
-
-      before do
-        Group.where(name: name).delete
-        admin_headers
-        post '/groups', body
-      end
-
-      it 'creates the group' do
-        expect(subject).not_to be_nil
-      end
+    it 'creates the group within the cluster' do
+      expect(Group.where(name: subject.name, cluster: cluster).first).not_to be_nil
     end
   end
 end

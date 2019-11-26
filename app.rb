@@ -75,33 +75,6 @@ resource :nodes, pkre: /[[:alnum:]]+(?:\.[[:alnum:]]+)?/ do
 
   has_many :group do
     fetch { resource.groups }
-
-    merge(sideload_on: :create) do |rios|
-      defer unless resource.cluster
-      resource.groups << rios.map { |rio| Group.find_by_fuzzy_id(rio[:id]) }
-      resource.save!
-      true
-    end
-
-    subtract do |rios|
-      ids = rios.map { |rio| rio[:id] }
-      resource.groups = resource.groups.reject { |g| ids.include?(g.id.to_s) }
-      resource.save!
-      true
-    end
-
-    replace(sideload_on: :update) do |rios|
-      groups = rios.map { |rio| Group.find(rio) }
-      resource.groups = groups
-      resource.save!
-      true
-    end
-
-    clear(sideload_on: :update) do
-      resource.groups = []
-      resource.save
-      true
-    end
   end
 end
 
@@ -135,7 +108,7 @@ resource :groups, pkre: GROUP_REGEX do
     pluck { resource.cluster }
 
     graft(sideload_on: :create) do |rio|
-      resource.cluster = Cluster.find(rio[:id])
+      resource.cluster = Cluster.find_by_fuzzy_id(rio[:id])
       resource.save!
       true
     end
