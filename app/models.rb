@@ -69,7 +69,11 @@ class Node
   index({ name: 1, cluster: 1 }, { unique: true })
 
   field :name, type: String
-  field :params, type: Hash, default: {}
+  field :level_params, type: Hash, default: {}
+
+  def cascade_params
+    level_params
+  end
 
   def validates_groups_cluster
     bad_groups = groups.reject { |g| g.cluster == cluster }
@@ -95,6 +99,11 @@ class Group
   index({ name: 1, cluster: 1 }, { unique: true })
 
   field :name, type: String
+  field :level_params, type: Hash, default: {}
+
+  def cascade_params
+    level_params
+  end
 
   def validates_nodes_cluster
     bad_nodes = nodes.reject { |n| n.cluster == cluster }
@@ -125,7 +134,11 @@ class Cluster
   index({ name: 1 }, { unique: true })
 
   field :name, type: String
-  field :params, type: Hash, default: {}
+  field :level_params, type: Hash, default: {}
+
+  def cascade_params
+    level_params
+  end
 
   def fuzzy_id
     ".#{name}"

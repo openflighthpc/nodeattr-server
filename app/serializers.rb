@@ -34,7 +34,7 @@ class NodeSerializer
   has_many :groups
 
   attribute :name
-  attribute :params
+  attribute(:params) { object.cascade_params }
 end
 
 class GroupSerializer
@@ -44,6 +44,7 @@ class GroupSerializer
   has_many :nodes
 
   attribute :name
+  attribute(:params) { object.cascade_params }
 end
 
 class ClusterSerializer
@@ -52,6 +53,6 @@ class ClusterSerializer
   has_many :nodes
 
   attribute :name
-  attribute :params
+  attribute(:params) { object.cascade_params }
 end
 

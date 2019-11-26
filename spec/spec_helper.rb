@@ -85,6 +85,7 @@ RSpec.configure do |c|
   def build_payload(model, relationships: {}, fuzzy: true)
     serializer = JSONAPI::Serializer.find_serializer(model, {})
     attributes = JSONAPI::Serializer.serialize(model, is_collection: false)['data']['attributes']
+    attributes.delete('params')
     rel_hash = relationships.each_with_object({}) do |(key, entity), hash|
       hash[key] = { data: nil }
       hash[key][:data] = if entity.is_a? Array
