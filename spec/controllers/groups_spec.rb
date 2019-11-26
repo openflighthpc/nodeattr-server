@@ -58,8 +58,9 @@ RSpec.describe '/groups' do
 
   context 'when creating a group with a cluster by fuzzy id' do
     let(:cluster) { create(:cluster) }
+    let(:attributes) { { name: subject.name } }
     let(:payload) do
-      build_payload(subject, relationships: { cluster: cluster })
+      build_payload(subject, attributes: attributes, relationships: { cluster: cluster })
     end
     subject { build(:group, cluster: nil) }
 
@@ -78,9 +79,10 @@ RSpec.describe '/groups' do
     let(:nodes) do
       (0..10).map { |_| create(:node, cluster: cluster) }
     end
+    let(:attributes) { { name: subject.name } }
     let(:payload) do
       rels = { nodes: nodes, cluster: cluster }
-      build_payload(subject, relationships: rels)
+      build_payload(subject, attributes: attributes, relationships: rels)
     end
     subject { build(:group, cluster: nil) }
 

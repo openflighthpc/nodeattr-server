@@ -36,8 +36,9 @@ RSpec.describe '/nodes' do
 
   context 'when grafting a cluster by fuzzy id on create' do
     let(:cluster) { create(:cluster) }
+    let(:attributes) { { name: subject.name } }
     let(:payload) do
-      build_payload(subject, relationships: { cluster: cluster })
+      build_payload(subject, attributes: attributes, relationships: { cluster: cluster })
     end
     subject { build(:node, cluster: nil) }
 
