@@ -183,5 +183,9 @@ resource :clusters, pkre: /(?:[a-zA-Z0-9]+)|(?:\.[\w-]+)/ do
   has_many :nodes do
     fetch { resource.nodes }
   end
+
+  has_many :groups do
+    fetch { resource.groups }
+  end
 end
 
