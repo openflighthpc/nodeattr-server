@@ -51,6 +51,7 @@ class ClusterSerializer
   include JSONAPI::Serializer
 
   has_many :nodes
+  has_many :groups
 
   attribute :name
   attribute(:params) { object.cascade_params }
