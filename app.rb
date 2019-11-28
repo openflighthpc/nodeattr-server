@@ -110,6 +110,7 @@ resource :groups, pkre: PKRE_REGEX do
 
   update do |attr|
     resource.update(**updatable(attr))
+    resource
   end
 
   destroy { resource.destroy }
