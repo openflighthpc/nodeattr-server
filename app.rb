@@ -83,7 +83,6 @@ resource :nodes, pkre: PKRE_REGEX do
   create do |attr|
     node = Node.new(**updatable(attr))
     raise_unless_cluster_relationship(node)
-    node.save
     [node.id, node]
   end
 
@@ -99,8 +98,7 @@ resource :nodes, pkre: PKRE_REGEX do
 
     graft(sideload_on: :create) do |rio|
       resource.cluster = Cluster.find_by_fuzzy_id(rio[:id])
-      resource.save
-      true
+      resource.save!
     end
   end
 
@@ -125,7 +123,6 @@ resource :groups, pkre: PKRE_REGEX do
   create do |attr|
     group = Group.new(**updatable(**attr))
     raise_unless_cluster_relationship(group)
-    group.save
     [group.id, group]
   end
 
@@ -142,7 +139,6 @@ resource :groups, pkre: PKRE_REGEX do
     graft(sideload_on: :create) do |rio|
       resource.cluster = Cluster.find_by_fuzzy_id(rio[:id])
       resource.save!
-      true
     end
   end
 
@@ -153,26 +149,22 @@ resource :groups, pkre: PKRE_REGEX do
       defer unless resource.cluster
       resource.nodes << rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
       resource.save!
-      true
     end
 
     replace do |rios|
       resource.nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
       resource.save!
-      true
     end
 
     subtract do |rios|
       remove_nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
       resource.nodes = resource.nodes - remove_nodes
       resource.save!
-      true
     end
 
     clear do
       resource.nodes = []
       resource.save!
-      true
     end
   end
 end
