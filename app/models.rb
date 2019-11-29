@@ -64,7 +64,7 @@ class Node
   include HasFuzzyID
 
   has_and_belongs_to_many :groups
-  belongs_to :cluster, optional: true
+  belongs_to :cluster
 
   validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
@@ -95,7 +95,7 @@ class Group
   include HasFuzzyID
 
   has_and_belongs_to_many :nodes
-  belongs_to :cluster, optional: true
+  belongs_to :cluster
 
   validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
