@@ -35,6 +35,16 @@ register Sinja
 
 COMPOUND_ID_REGEX = /\A([[:alnum:]]+)\.([[:alnum:]]+)\Z/
 
+configure_jsonapi do |c|
+  c.validation_exceptions << ActiveModel::ValidationError
+  c.validation_formatter = ->(e) do
+    relations = e.model.relations.keys.map(&:to_sym)
+    e.model.errors.messages.map do |src, msg|
+      relations.include?(src) ? [src, msg, 'relationships'] : [src, msg]
+    end
+  end
+end
+
 helpers do
   def updatable(**attr)
     raise Sinja::BadRequestError, <<~ERROR.squish if attr.include?(:params)
@@ -45,12 +55,10 @@ helpers do
     end
   end
 
-  def raise_unless_cluster_relationship
+  def raise_unless_cluster_relationship(resource)
     raise NoMethodError if data[:relationships][:cluster][:data][:id].nil?
   rescue NoMethodError
-    raise Sinja::BadRequestError, <<~ERROR.squish
-      Can not create the resource without a cluster relationship
-    ERROR
+    resource.validate!
   end
 end
 
@@ -73,8 +81,9 @@ resource :nodes, pkre: PKRE_REGEX do
   show
 
   create do |attr|
-    raise_unless_cluster_relationship
-    node = Node.create(**updatable(attr))
+    node = Node.new(**updatable(attr))
+    raise_unless_cluster_relationship(node)
+    node.save
     [node.id, node]
   end
 
@@ -114,8 +123,9 @@ resource :groups, pkre: PKRE_REGEX do
   show
 
   create do |attr|
-    raise_unless_cluster_relationship
-    group = Group.create(**updatable(**attr))
+    group = Group.new(**updatable(**attr))
+    raise_unless_cluster_relationship(group)
+    group.save
     [group.id, group]
   end
 

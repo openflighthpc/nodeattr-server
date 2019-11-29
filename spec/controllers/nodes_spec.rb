@@ -78,7 +78,8 @@ RSpec.describe '/nodes' do
     end
 
     it 'responds bad request' do
-      expect(last_response).to be_bad_request
+      expect(last_response).to be_unprocessable
+      expect(error_pointers).to include('/data/relationships/cluster')
     end
   end
 end

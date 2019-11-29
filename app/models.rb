@@ -63,6 +63,7 @@ class Node
   has_and_belongs_to_many :groups
   belongs_to :cluster, optional: true
 
+  validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
   validate :validates_groups_cluster
 
@@ -93,6 +94,7 @@ class Group
   has_and_belongs_to_many :nodes
   belongs_to :cluster, optional: true
 
+  validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
   validate :validates_nodes_cluster
 

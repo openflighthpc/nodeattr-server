@@ -122,8 +122,9 @@ RSpec.describe '/groups' do
       post path, payload.to_json
     end
 
-    it 'responds bad request' do
-      expect(last_response).to be_bad_request
+    it 'responds unprocessable' do
+      expect(last_response).to be_unprocessable
+      expect(error_pointers).to include('/data/relationships/cluster')
     end
   end
 
