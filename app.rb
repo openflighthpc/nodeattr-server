@@ -28,6 +28,7 @@
 #===============================================================================
 
 require 'sinja/method_override'
+require 'hashie'
 
 use Sinja::MethodOverride
 register Sinja
@@ -42,6 +43,14 @@ helpers do
     [:name, :level_params].each_with_object({}) do |key, memo|
       memo[key] = attr[key] if attr.key?(key)
     end
+  end
+
+  def raise_unless_cluster_relationship
+    raise NoMethodError if data[:relationships][:cluster][:data][:id].nil?
+  rescue NoMethodError
+    raise Sinja::BadRequestError, <<~ERROR.squish
+      Can not create the resource without a cluster relationship
+    ERROR
   end
 end
 
@@ -64,6 +73,7 @@ resource :nodes, pkre: PKRE_REGEX do
   show
 
   create do |attr|
+    raise_unless_cluster_relationship
     node = Node.create(**updatable(attr))
     [node.id, node]
   end
@@ -104,6 +114,7 @@ resource :groups, pkre: PKRE_REGEX do
   show
 
   create do |attr|
+    raise_unless_cluster_relationship
     group = Group.create(**updatable(**attr))
     [group.id, group]
   end

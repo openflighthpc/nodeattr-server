@@ -67,5 +67,19 @@ RSpec.describe '/nodes' do
       expect(Node.where(name: subject.name, cluster: cluster).first).not_to be_nil
     end
   end
+
+  context 'when creating a node without a cluster' do
+    let(:payload) { build_payload(subject) }
+    subject { build(:node, cluster: nil) }
+
+    before do
+      admin_headers
+      post path, payload.to_json
+    end
+
+    it 'responds bad request' do
+      expect(last_response).to be_bad_request
+    end
+  end
 end
 

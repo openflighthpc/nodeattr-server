@@ -113,6 +113,20 @@ RSpec.describe '/groups' do
     end
   end
 
+  context 'when creating a group without a cluster' do
+    let(:payload) { build_payload(subject) }
+    subject { build(:group, cluster: nil) }
+
+    before do
+      admin_headers
+      post path, payload.to_json
+    end
+
+    it 'responds bad request' do
+      expect(last_response).to be_bad_request
+    end
+  end
+
   shared_context 'with existing group and nodes' do
     let(:cluster) { create(:cluster) }
     let(:old_nodes) { (0..2).map { |_| create(:node, cluster: cluster) } }
