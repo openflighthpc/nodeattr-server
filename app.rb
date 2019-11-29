@@ -36,6 +36,8 @@ register Sinja
 COMPOUND_ID_REGEX = /\A([[:alnum:]]+)\.([[:alnum:]]+)\Z/
 
 configure_jsonapi do |c|
+  c.conflict_exceptions << Mongoid::Errors::Validations
+
   c.validation_exceptions << ActiveModel::ValidationError
   c.validation_formatter = ->(e) do
     relations = e.model.relations.keys.map(&:to_sym)
@@ -87,7 +89,7 @@ resource :nodes, pkre: PKRE_REGEX do
   end
 
   update do |attr|
-    resource.update(**updatable(attr))
+    resource.update!(**updatable(attr))
     resource
   end
 
@@ -127,7 +129,7 @@ resource :groups, pkre: PKRE_REGEX do
   end
 
   update do |attr|
-    resource.update(**updatable(attr))
+    resource.update!(**updatable(attr))
     resource
   end
 
@@ -183,12 +185,12 @@ resource :clusters, pkre: /(?:[a-zA-Z0-9]+)|(?:\.[\w-]+)/ do
   show
 
   create do |attr|
-    cluster = Cluster.create(**updatable(attr))
+    cluster = Cluster.create!(**updatable(attr))
     [cluster.id, cluster]
   end
 
   update do |attr|
-    resource.update(**updatable(attr))
+    resource.update!(**updatable(attr))
     resource
   end
 
