@@ -122,9 +122,13 @@ class Cluster
 
   def self.find_by_fuzzy_id(id)
     if id.first == '.'
-      Cluster.where(name: id[1..-1]).first
+      name = id[1..-1]
+      Cluster.where(name: id[1..-1]).first.tap do |c|
+        next if c
+        raise Mongoid::Errors::DocumentNotFound.new(self, name: name)
+      end
     else
-      where(id: id).first
+      find(id)
     end
   end
 
