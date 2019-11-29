@@ -58,10 +58,21 @@ module HasFuzzyID
   end
 end
 
+# This causes destroy! to raise an AcitveModel::ValidationError instead of a
+# generic mongoid error. This allows the top level error handling to better
+# respond with the exact cause of the error
+module HasOverriddenDestroy
+  def destroy!(*a, &b)
+    destroy(*a, &b)
+    errors.any? ? raise(ActiveModel::ValidationError.new(self)) : true
+  end
+end
+
 class Node
   include Mongoid::Document
 
   include HasFuzzyID
+  include HasOverriddenDestroy
 
   has_and_belongs_to_many :groups
   belongs_to :cluster
@@ -93,6 +104,7 @@ class Group
   include Mongoid::Document
 
   include HasFuzzyID
+  include HasOverriddenDestroy
 
   has_and_belongs_to_many :nodes
   belongs_to :cluster
@@ -123,6 +135,8 @@ end
 class Cluster
   include Mongoid::Document
 
+  include HasOverriddenDestroy
+
   def self.find_by_name(name)
     where(name: name).first.tap do |c|
       next if c
@@ -138,8 +152,8 @@ class Cluster
     end
   end
 
-  has_many :nodes
-  has_many :groups
+  has_many :nodes, dependent: :restrict_with_error
+  has_many :groups, dependent: :restrict_with_error
 
   validates :name, presence: true, uniqueness: true
 

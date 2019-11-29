@@ -94,7 +94,7 @@ resource :nodes, pkre: PKRE_REGEX do
     resource
   end
 
-  destroy { resource.destroy }
+  destroy { resource.destroy! }
 
   has_one :cluster do
     pluck { resource.cluster }
@@ -134,7 +134,7 @@ resource :groups, pkre: PKRE_REGEX do
     resource
   end
 
-  destroy { resource.destroy }
+  destroy { resource.destroy! }
 
   has_one :cluster do
     pluck { resource.cluster }
@@ -195,7 +195,9 @@ resource :clusters, pkre: /(?:[a-zA-Z0-9]+)|(?:\.[\w-]+)/ do
     resource
   end
 
-  destroy { resource.destroy }
+  destroy do
+    resource.destroy!
+  end
 
   has_many :nodes do
     fetch { resource.nodes }
