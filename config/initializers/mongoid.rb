@@ -39,6 +39,8 @@ else
       hosts: ['localhost:27017'],
       database: "flight-nodeattr-#{Sinatra::Base.environment}"
     }
+    config.log_level = :warn
   end
+  Mongo::Logger.logger.level = Logger::INFO
 end
 
