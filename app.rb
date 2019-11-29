@@ -37,6 +37,7 @@ COMPOUND_ID_REGEX = /\A([[:alnum:]]+)\.([[:alnum:]]+)\Z/
 
 configure_jsonapi do |c|
   c.conflict_exceptions << Mongoid::Errors::Validations
+  c.not_found_exceptions << Mongoid::Errors::DocumentNotFound
 
   c.validation_exceptions << ActiveModel::ValidationError
   c.validation_formatter = ->(e) do

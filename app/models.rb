@@ -42,10 +42,13 @@ module HasFuzzyID
     def find_by_fuzzy_id(id)
       if id.include? '.'
         cluster_name, name = id.split('.', 2)
-        cluster = Cluster.where(name: cluster_name).first
-        where(cluster: cluster, name: name).first
+        cluster = Cluster.find_by_name(cluster_name)
+        where(cluster: cluster, name: name).first.tap do |n|
+          next if n
+          raise Mongoid::Errors::DocumentNotFound.new(self, cluster: cluster, name: name)
+        end
       else
-        where(id: id).first
+        find(id)
       end
     end
   end
@@ -120,13 +123,16 @@ end
 class Cluster
   include Mongoid::Document
 
+  def self.find_by_name(name)
+    where(name: name).first.tap do |c|
+      next if c
+      raise Mongoid::Errors::DocumentNotFound.new(self, name: name)
+    end
+  end
+
   def self.find_by_fuzzy_id(id)
     if id.first == '.'
-      name = id[1..-1]
-      Cluster.where(name: id[1..-1]).first.tap do |c|
-        next if c
-        raise Mongoid::Errors::DocumentNotFound.new(self, name: name)
-      end
+      find_by_name(id[1..-1])
     else
       find(id)
     end

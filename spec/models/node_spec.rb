@@ -27,6 +27,8 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
+require 'spec_helper'
+
 RSpec.describe Node do
   context 'when changing clusters with an existing group' do
     let(:cluster) { create(:cluster) }
@@ -55,18 +57,24 @@ RSpec.describe Node do
       expect(described_class.find_by_fuzzy_id(fuzzy_id)).to eq(subject)
     end
 
-    it 'returns nil if the cluster is missing' do
+    it 'errors if the cluster is missing' do
       subject.cluster.delete
-      expect(described_class.find_by_fuzzy_id(fuzzy_id)).to be_nil
+      expect do
+        described_class.find_by_fuzzy_id(fuzzy_id)
+      end.to raise_error(Mongoid::Errors::DocumentNotFound)
     end
 
     it 'returns nil if the node is missing' do
       subject.delete
-      expect(described_class.find_by_fuzzy_id(fuzzy_id)).to be_nil
+      expect do
+        described_class.find_by_fuzzy_id(fuzzy_id)
+      end.to raise_error(Mongoid::Errors::DocumentNotFound)
     end
 
     it 'returns nil for garbage regular id strings' do
-      expect(described_class.find_by_fuzzy_id('garbage')).to be_nil
+      expect do
+        described_class.find_by_fuzzy_id('garbage')
+      end.to raise_error(Mongoid::Errors::DocumentNotFound)
     end
   end
 end
