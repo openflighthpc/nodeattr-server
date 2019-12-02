@@ -109,8 +109,8 @@ resource :nodes, pkre: PKRE_REGEX do
     end
   end
 
-  has_many :group do
-    fetch { resource.groups }
+  has_many :other_groups do
+    fetch { resource.other_groups }
   end
 end
 
@@ -153,28 +153,28 @@ resource :groups, pkre: PKRE_REGEX do
     end
   end
 
-  has_many :nodes do
-    fetch { resource.nodes }
+  has_many :other_nodes do
+    fetch { resource.other_nodes }
 
     merge(sideload_on: :create) do |rios|
       defer unless resource.cluster
-      resource.nodes << rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
+      resource.other_nodes << rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
       resource.save!
     end
 
     replace do |rios|
-      resource.nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
+      resource.other_nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
       resource.save!
     end
 
     subtract do |rios|
       remove_nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
-      resource.nodes = resource.nodes - remove_nodes
+      resource.other_nodes = resource.other_nodes - remove_nodes
       resource.save!
     end
 
     clear do
-      resource.nodes = []
+      resource.other_nodes = []
       resource.save!
     end
   end

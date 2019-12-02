@@ -31,7 +31,7 @@ class NodeSerializer
   include JSONAPI::Serializer
 
   has_one :cluster
-  has_many :groups
+  has_many :other_groups
 
   attribute :name
   attribute(:params) { object.cascade_params }
@@ -41,7 +41,7 @@ class GroupSerializer
   include JSONAPI::Serializer
 
   has_one :cluster
-  has_many :nodes
+  has_many :other_nodes
 
   attributes :name, :priority
   attribute(:params) { object.cascade_params }

@@ -33,7 +33,7 @@ RSpec.describe Node do
   context 'when changing clusters with an existing group' do
     let(:cluster) { create(:cluster) }
     let(:group) { create(:group, cluster: cluster) }
-    subject { create(:node, cluster: cluster, groups: [group]) }
+    subject { create(:node, cluster: cluster, other_groups: [group]) }
 
     before do
       subject.cluster = create(:cluster)
@@ -124,7 +124,7 @@ RSpec.describe Node do
       create(:node,
              name: 'node',
              cluster: cluster,
-             groups: [medium, high, low],
+             other_groups: [medium, high, low],
              level_params: { node: 'node-node' })
     end
 

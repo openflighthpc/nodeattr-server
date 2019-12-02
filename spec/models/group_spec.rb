@@ -33,14 +33,14 @@ RSpec.describe Group do
   context 'when changing a groups cluster with an existing node' do
     let(:cluster) { create(:cluster) }
     let(:node) { create(:node, cluster: cluster) }
-    subject { create(:group, cluster: cluster, nodes: [node]) }
+    subject { create(:group, cluster: cluster, other_nodes: [node]) }
 
     before do
       subject.cluster = create(:cluster)
       subject.validate
     end
 
-    it 'is in valid' do
+    it 'is invalid' do
       expect(subject).not_to be_valid
     end
   end

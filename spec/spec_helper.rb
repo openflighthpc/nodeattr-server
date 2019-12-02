@@ -70,7 +70,7 @@ RSpec.configure do |c|
   end
 
   def parse_last_request_body
-    Hashie::Mash.new(JSON.pase(last_request.body))
+    Hashie::Mash.new(JSON.parse(last_request.body.tap(&:rewind).read))
   end
 
   def parse_last_response_body

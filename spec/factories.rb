@@ -30,13 +30,13 @@
 FactoryBot.define do
   factory :node do
     cluster
-    groups { [] }
+    other_groups { [] }
     sequence(:name) { |n| "factory_bot-node#{n}" }
   end
 
   factory :group do
     cluster
-    nodes { [] }
+    other_nodes { [] }
     sequence(:name) { |n| "factory_bot-group#{n}" }
   end
 

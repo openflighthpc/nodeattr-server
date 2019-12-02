@@ -97,18 +97,23 @@ class Node
   include HasLevelParams
 
   belongs_to :cluster
-  belongs_to :primary_group, class_name: 'Group'
-  has_and_belongs_to_many :groups
+  belongs_to :primary_group, class_name: 'Group', optional: true
+  has_and_belongs_to_many :other_groups, class_name: 'Group'
 
   validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
   validate :validates_groups_cluster
 
   index({ cluster: 1 })
-  index({ cluster: 1, group: 1 })
   index({ name: 1, cluster: 1 }, { unique: true })
 
   field :name, type: String
+
+  # TODO: Review the use of reject(&:nil?), it might not be needed once the
+  # primary_group is mandatory
+  def groups
+    [primary_group, *other_groups].uniq.reject(&:nil?)
+  end
 
   def cascade_params
     groups_reverse_priority_order.reduce(cluster.level_params) do |memo, group|
@@ -139,7 +144,7 @@ class Group
 
   belongs_to :cluster
   has_many :primary_nodes, class_name: 'Node', foreign_key: :primary_group_id
-  has_and_belongs_to_many :nodes
+  has_and_belongs_to_many :other_nodes, class_name: 'Node'
 
   validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
@@ -160,6 +165,10 @@ class Group
       rounded = (self.class.where(cluster: cluster).max(:priority) || 0).round(-2)
       self.priority = rounded + 100
     end
+  end
+
+  def nodes
+    [*primary_nodes, *other_nodes].uniq
   end
 
   def cascade_params
