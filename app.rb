@@ -153,29 +153,31 @@ resource :groups, pkre: PKRE_REGEX do
     end
   end
 
-  has_many :other_nodes do
-    fetch { resource.other_nodes }
+  [:primary_nodes, :other_nodes].each do |type|
+    has_many type do
+      fetch { resource.send(type) }
 
-    merge(sideload_on: :create) do |rios|
-      defer unless resource.cluster
-      resource.other_nodes << rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
-      resource.save!
-    end
+      merge(sideload_on: :create) do |rios|
+        defer unless resource.cluster
+        resource.send(type) << rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
+        resource.save!
+      end
 
-    replace do |rios|
-      resource.other_nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
-      resource.save!
-    end
+      replace do |rios|
+        resource.send "#{type}=", rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
+        resource.save!
+      end
 
-    subtract do |rios|
-      remove_nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
-      resource.other_nodes = resource.other_nodes - remove_nodes
-      resource.save!
-    end
+      subtract do |rios|
+        remove_nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
+        resource.send "#{type}=", (resource.send(type) - remove_nodes)
+        resource.save!
+      end
 
-    clear do
-      resource.other_nodes = []
-      resource.save!
+      clear do
+        resource.send "#{type}=", []
+        resource.save!
+      end
     end
   end
 end

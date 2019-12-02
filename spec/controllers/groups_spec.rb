@@ -108,7 +108,7 @@ RSpec.describe '/groups' do
     end
     let(:attributes) { { name: subject.name } }
     let(:payload) do
-      rels = { "other-nodes" => nodes, cluster: cluster }
+      rels = { "primary-nodes" => nodes, cluster: cluster }
       build_payload(subject, attributes: attributes, relationships: rels)
     end
     subject { build(:group, cluster: nil) }
@@ -120,7 +120,7 @@ RSpec.describe '/groups' do
 
     it 'adds the nodes to the group' do
       group = Group.where(name: subject.name, cluster: cluster).first
-      expect(group.other_nodes).to contain_exactly(*nodes)
+      expect(group.primary_nodes).to contain_exactly(*nodes)
     end
   end
 
@@ -143,12 +143,12 @@ RSpec.describe '/groups' do
     let(:cluster) { create(:cluster) }
     let(:old_nodes) { (0..2).map { |_| create(:node, cluster: cluster) } }
     let(:new_nodes) { (0..2).map { |_| create(:node, cluster: cluster) } }
-    let(:relationship_path) { path(subject.fuzzy_id, 'relationships', 'other-nodes') }
+    let(:relationship_path) { path(subject.fuzzy_id, 'relationships', 'primary-nodes') }
     let(:original_nodes) { raise 'original_nodes must be overridden' }
     let(:payload) do
       { data: new_nodes.map { |n| build_rio(n) } }
     end
-    subject { create(:group, cluster: cluster, other_nodes: original_nodes) }
+    subject { create(:group, cluster: cluster, primary_nodes: original_nodes) }
   end
 
   context 'when adding an additional other nodes to a group' do
@@ -163,7 +163,7 @@ RSpec.describe '/groups' do
     end
 
     it 'adds the new node to the existing nodes' do
-      expect(subject.other_nodes).to contain_exactly(*new_nodes, *old_nodes)
+      expect(subject.primary_nodes).to contain_exactly(*new_nodes, *old_nodes)
     end
   end
 

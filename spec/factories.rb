@@ -37,7 +37,13 @@ FactoryBot.define do
   factory :group do
     cluster
     other_nodes { [] }
+    primary_nodes { [] }
     sequence(:name) { |n| "factory_bot-group#{n}" }
+
+    after(:create) do |group|
+      # Ensures that the primary nodes relationship has been updated on the node
+      group.primary_nodes.map(&:save)
+    end
   end
 
   factory :cluster do
