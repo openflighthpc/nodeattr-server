@@ -33,6 +33,8 @@ class NodeSerializer
   has_one :cluster
   has_many :groups
 
+  has_many(:cascades) { object.cascade_models }
+
   attribute :name
   attribute(:params) { object.cascade_params }
 end

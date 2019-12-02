@@ -112,6 +112,10 @@ resource :nodes, pkre: PKRE_REGEX do
   has_many :group do
     fetch { resource.groups }
   end
+
+  has_many :cascades do
+    fetch { resource.cascade_models }
+  end
 end
 
 resource :groups, pkre: PKRE_REGEX do
