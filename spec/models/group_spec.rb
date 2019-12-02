@@ -27,6 +27,8 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
+require 'spec_helper'
+
 RSpec.describe Group do
   context 'when changing a groups cluster with an existing node' do
     let(:cluster) { create(:cluster) }
@@ -58,6 +60,30 @@ RSpec.describe Group do
     it 'can override the cluster parameter with a level parameter' do
       subject.level_params = { cluster_key => override_value }
       expect(subject.cascade_params[cluster_key]).to eq(override_value)
+    end
+  end
+
+  describe '#priority' do
+    let(:cluster) { create(:cluster) }
+
+    context 'when adding multiple groups with specific priorities' do
+      let!(:first) { create(:group, cluster: cluster) }
+      let!(:random1) { create(:group, cluster: cluster, priority: 149) }
+      let!(:round_down) { create(:group, cluster: cluster) }
+      let!(:random2) { create(:group, cluster: cluster, priority: 251) }
+      let!(:round_up) { create(:group, cluster: cluster) }
+
+      it 'assigns the first priority of 100' do
+        expect(first.priority).to eq(100)
+      end
+
+      it 'rounds the previous max priority and adds 100 (down test)' do
+        expect(round_down.priority).to eq(200)
+      end
+
+      it 'rounds the previous max priority and adds 100 (up test)' do
+        expect(round_up.priority).to eq(400)
+      end
     end
   end
 end

@@ -103,6 +103,8 @@ class Node
   validates :name, presence: true, uniqueness: { scope: :cluster }
   validate :validates_groups_cluster
 
+  index({ cluster: 1 })
+  index({ cluster: 1, group: 1 })
   index({ name: 1, cluster: 1 }, { unique: true })
 
   field :name, type: String
@@ -133,11 +135,24 @@ class Group
 
   validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
+  validates :priority, presence: true, uniqueness: { scope: :cluster }
   validate :validates_nodes_cluster
 
+  index({ cluster: 1 })
+  index({ priority: 1 })
   index({ name: 1, cluster: 1 }, { unique: true })
+  index({ priority: 1, cluster: 1 }, { unique: true})
 
   field :name, type: String
+  field :priority, type: Integer
+
+  # Set the priority before validated as this ensures the cluster has been set
+  before_validation do
+    unless priority
+      rounded = (self.class.where(cluster: cluster).max(:priority) || 0).round(-2)
+      self.priority = rounded + 100
+    end
+  end
 
   def cascade_params
     cluster.level_params.merge(level_params)
