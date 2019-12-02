@@ -96,8 +96,9 @@ class Node
   include HasOverriddenDestroy
   include HasLevelParams
 
-  has_and_belongs_to_many :groups
   belongs_to :cluster
+  belongs_to :primary_group, class_name: 'Group'
+  has_and_belongs_to_many :groups
 
   validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
@@ -136,8 +137,9 @@ class Group
   include HasOverriddenDestroy
   include HasLevelParams
 
-  has_and_belongs_to_many :nodes
   belongs_to :cluster
+  has_many :primary_nodes, class_name: 'Node', foreign_key: :primary_group_id
+  has_and_belongs_to_many :nodes
 
   validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
