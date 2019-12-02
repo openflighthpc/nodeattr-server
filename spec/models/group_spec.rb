@@ -42,4 +42,22 @@ RSpec.describe Group do
       expect(subject).not_to be_valid
     end
   end
+
+  describe '#cascade_params' do
+    subject { create(:group, cluster: cluster) }
+    let(:cluster) { create(:cluster, level_params: { cluster_key => cluster_value }) }
+    let(:cluster_key) { 'cluster-key' }
+    let(:cluster_value) { 'initial-cluster-value-in-let' }
+    let(:cluster_params) { { cluster_key => cluster_value } }
+    let(:override_value) { 'new-value' }
+
+    it 'inherits the cluster parameters' do
+      expect(subject.cascade_params[cluster_key]).to eq(cluster_value)
+    end
+
+    it 'can override the cluster parameter with a level parameter' do
+      subject.level_params = { cluster_key => override_value }
+      expect(subject.cascade_params[cluster_key]).to eq(override_value)
+    end
+  end
 end

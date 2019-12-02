@@ -140,7 +140,7 @@ class Group
   field :name, type: String
 
   def cascade_params
-    level_params
+    cluster.level_params.merge(level_params)
   end
 
   def validates_nodes_cluster
