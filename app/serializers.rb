@@ -43,7 +43,7 @@ class GroupSerializer
   has_one :cluster
   has_many :nodes
 
-  attribute :name
+  attributes :name, :priority
   attribute(:params) { object.cascade_params }
 end
 

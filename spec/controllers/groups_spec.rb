@@ -72,6 +72,17 @@ RSpec.describe '/groups' do
     end
   end
 
+  context 'when making an update request with a priority attribute' do
+    it 'can update the priority' do
+      group = create(:group)
+      new_priority = group.priority + 1
+      admin_headers
+      patch path(group.fuzzy_id), build_payload(group, attributes: { priority: new_priority }).to_json
+      group.reload
+      expect(group.priority).to eq(new_priority)
+    end
+  end
+
   context 'when creating a group with a cluster by fuzzy id' do
     let(:cluster) { create(:cluster) }
     let(:attributes) { { name: subject.name } }

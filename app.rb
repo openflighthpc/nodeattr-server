@@ -49,11 +49,15 @@ configure_jsonapi do |c|
 end
 
 helpers do
+  def updatable_fields
+    [:name, :level_params]
+  end
+
   def updatable(**attr)
     raise Sinja::BadRequestError, <<~ERROR.squish if attr.include?(:params)
       The 'params' attribute can not be set directly. Please set the 'level-params' instead!
     ERROR
-    [:name, :level_params].each_with_object({}) do |key, memo|
+    updatable_fields.each_with_object({}) do |key, memo|
       memo[key] = attr[key] if attr.key?(key)
     end
   end
@@ -114,6 +118,10 @@ resource :groups, pkre: PKRE_REGEX do
   helpers do
     def find(id)
       Group.find_by_fuzzy_id(id)
+    end
+
+    def updatable_fields
+      [*super(), :priority]
     end
   end
 
