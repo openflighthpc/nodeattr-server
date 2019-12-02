@@ -57,13 +57,6 @@ RSpec.describe Node do
       expect(described_class.find_by_fuzzy_id(fuzzy_id)).to eq(subject)
     end
 
-    it 'errors if the cluster is missing' do
-      subject.cluster.delete
-      expect do
-        described_class.find_by_fuzzy_id(fuzzy_id)
-      end.to raise_error(Mongoid::Errors::DocumentNotFound)
-    end
-
     it 'returns nil if the node is missing' do
       subject.delete
       expect do
