@@ -70,5 +70,34 @@ RSpec.describe Node do
       end.to raise_error(Mongoid::Errors::DocumentNotFound)
     end
   end
+
+  describe '#level_params=' do
+    subject { create(:node, level_params: { initial_key => initial_value }) }
+    let(:initial_key) { 'initial-key' }
+    let(:initial_value) { 'some-initial-value-in-let' }
+    let(:key) { 'test-key' }
+    let(:value) { 'value-set-in-let' }
+
+    it 'can set a value' do
+      subject.level_params = { key => value }
+      expect(subject.level_params[key]).to eq(value)
+    end
+
+    it 'does not save nil values' do
+      subject.level_params = { initial_key => nil }
+      expect(subject.level_params.keys).not_to include(initial_key)
+    end
+
+    it 'does not alter other keys' do
+      subject.level_params = { key => value }
+      subject.level_params = { key => nil }
+      expect(subject.level_params[initial_key]).to eq(initial_value)
+    end
+
+    it 'can set false' do
+      subject.level_params = { key => false }
+      expect(subject.level_params[key]).to be false
+    end
+  end
 end
 

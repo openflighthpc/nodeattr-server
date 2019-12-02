@@ -68,11 +68,33 @@ module HasOverriddenDestroy
   end
 end
 
+module HasLevelParams
+  extend ActiveSupport::Concern
+
+  included do
+    field :level_params, type: Hash, default: {}
+  end
+
+  def level_params=(hash)
+    nil_proc = ->(_, v) { v.nil? }
+    new_hash = hash.reject(&nil_proc).to_h
+    nil_keys = hash.select(&nil_proc).keys
+
+    merged_hash = level_params.merge(new_hash)
+    save_hash = nil_keys.each_with_object(merged_hash) do |key, memo|
+      memo.delete(key)
+    end
+
+    super(save_hash)
+  end
+end
+
 class Node
   include Mongoid::Document
 
   include HasFuzzyID
   include HasOverriddenDestroy
+  include HasLevelParams
 
   has_and_belongs_to_many :groups
   belongs_to :cluster
@@ -84,7 +106,6 @@ class Node
   index({ name: 1, cluster: 1 }, { unique: true })
 
   field :name, type: String
-  field :level_params, type: Hash, default: {}
 
   def cascade_params
     level_params
@@ -105,6 +126,7 @@ class Group
 
   include HasFuzzyID
   include HasOverriddenDestroy
+  include HasLevelParams
 
   has_and_belongs_to_many :nodes
   belongs_to :cluster
@@ -116,7 +138,6 @@ class Group
   index({ name: 1, cluster: 1 }, { unique: true })
 
   field :name, type: String
-  field :level_params, type: Hash, default: {}
 
   def cascade_params
     level_params
@@ -136,6 +157,7 @@ class Cluster
   include Mongoid::Document
 
   include HasOverriddenDestroy
+  include HasLevelParams
 
   def self.find_by_name(name)
     where(name: name).first.tap do |c|
@@ -160,7 +182,6 @@ class Cluster
   index({ name: 1 }, { unique: true })
 
   field :name, type: String
-  field :level_params, type: Hash, default: {}
 
   def cascade_params
     level_params
