@@ -99,5 +99,40 @@ RSpec.describe Node do
       expect(subject.level_params[key]).to be false
     end
   end
+
+  describe '#cascade_params' do
+    def create_group(type, priority)
+      idx = keys.find_index(type)
+      params = keys[idx..-1].map { |k| [k, "#{type}-#{k}"] }.to_h
+      create(:group,
+             name: type.to_s,
+             cluster: cluster,
+             priority: priority,
+             level_params: params)
+    end
+
+    let(:keys) { [:cluster, :high, :medium, :low, :node] }
+    let(:cluster) do
+      params = keys.map { |k| [k, "cluster-#{k}"] }.to_h
+      create(:cluster, level_params: params)
+    end
+    let(:high) { create_group(:high, 100) }
+    let(:medium) { create_group(:medium, 10) }
+    let(:low) { create_group(:low, 1) }
+
+    subject do
+      create(:node,
+             name: 'node',
+             cluster: cluster,
+             groups: [medium, high, low],
+             level_params: { node: 'node-node' })
+    end
+
+    it 'sets each key at the corresponding level' do
+      keys.each do |key|
+        expect(subject.cascade_params[key]).to eq("#{key}-#{key}")
+      end
+    end
+  end
 end
 

@@ -110,7 +110,13 @@ class Node
   field :name, type: String
 
   def cascade_params
-    level_params
+    groups_reverse_priority_order.reduce(cluster.level_params) do |memo, group|
+      memo.merge(group.level_params)
+    end.merge(level_params)
+  end
+
+  def groups_reverse_priority_order
+    groups.sort_by { |g| -g.priority }
   end
 
   def validates_groups_cluster
