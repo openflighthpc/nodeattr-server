@@ -71,6 +71,13 @@ RSpec.describe Node do
     end
   end
 
+  describe '#primary_group' do
+    it 'defaults to the orphan group' do
+      node = create(:node)
+      expect(node.primary_group).to eq(node.cluster.orphan_group)
+    end
+  end
+
   describe '#level_params=' do
     subject { create(:node, level_params: { initial_key => initial_value }) }
     let(:initial_key) { 'initial-key' }

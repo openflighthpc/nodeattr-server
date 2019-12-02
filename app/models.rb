@@ -97,10 +97,9 @@ class Node
   include HasLevelParams
 
   belongs_to :cluster
-  belongs_to :primary_group, class_name: 'Group', optional: true
+  belongs_to :primary_group, class_name: 'Group'
   has_and_belongs_to_many :other_groups, class_name: 'Group'
 
-  validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
   validate :validates_groups_cluster
 
@@ -109,8 +108,10 @@ class Node
 
   field :name, type: String
 
-  # TODO: Review the use of reject(&:nil?), it might not be needed once the
-  # primary_group is mandatory
+  before_validation do
+    self.primary_group = cluster&.orphan_group unless primary_group
+  end
+
   def groups
     [primary_group, *other_groups].uniq.reject(&:nil?)
   end
@@ -214,6 +215,10 @@ class Cluster
   index({ name: 1 }, { unique: true })
 
   field :name, type: String
+
+  def orphan_group
+    Group.where(cluster: self).find_or_create_by(name: 'orphan')
+  end
 
   def cascade_params
     level_params
