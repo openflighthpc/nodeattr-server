@@ -10,7 +10,7 @@ This API broadly conforms the [JSON:API Specifications](https://jsonapi.org/). T
 
 The "fuzzy id" for a cluster is defined as: `.<cluster-name>` (*NOTE* the leading dot). Modifying the cluster name will naturally lead to the fuzzy id changing.
 
-### List 
+### List
 
 Return a list of all the clusters:
 
@@ -47,7 +47,7 @@ Content-Type: application/vnd.api+json
 
 ### Show
 
-Request a single cluster by `id` (or "fuzzy-id"):
+Request a single cluster by `id` or "fuzzy-id":
 
 ```
 GET /clusters/:id_or_fuzzy
@@ -95,17 +95,17 @@ Content-Type: application/vnd.api+json
     },
     "relationships": {
       "nodes": {
-        "data": [Array-Of-Node-Resource-Identifier-Objects],
+        "data": [<Array-Of-Node-Resource-Identifier-Objects>],
         "links": ... see spec ...
       },
       "groups": {
-        "data": [Array-Of-Group-Resource-Identifier-Objects],
+        "data": [<Array-Of-Group-Resource-Identifier-Objects>],
         "links": ... see spec ...
       }
     },
     "links": ... see spec ...
   },
-  "included": [Array-Of-Included-Node-And-Group-Objects],
+  "included": [<Array-Of-Included-Node-And-Group-Objects>],
   ... see spec ...
 }
 ```
@@ -300,5 +300,113 @@ Authorization: Bearer <jwt>
 
 HTTP/1.1 200 OK
 { ... see list group response below ... }
+```
+
+## Groups
+
+### Fuzzy ID
+
+The "fuzzy id" for a `group` is defined as: `<cluster-name>.<group-name>` (*NOTE*: the names are delimited by a dot). Modifying the cluster or group name will naturally change the "fuzzy id".
+
+### List
+
+Return all the groups across all clusters:
+
+```
+GET /groups
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": [<Array-Of-Group-Objects],
+  ... see JSON:API spec ...
+}
+```
+
+Return all the `nodes` and the `cluster` within the same request:
+
+```
+GET /groups?include=nodes%2Ccluster
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": [<Array-Of-Group-Objects],
+  "included": [<Array-Of-Included-Node-Objects-And-Cluster-Object>]
+  ... see spec ...
+}
+```
+
+### Show
+
+Return a specific `group` by `id` or "fuzzy id":
+
+```
+GET /groups/:id_or_fuzzy
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": {
+    "type": "groups",
+    "id": "<id>",
+    "attributes": {
+      "name": "<group-name>",
+      "priority": <integer-priority>,
+      "params": {}
+    },
+    "relationships": {
+      "nodes": { "links": ... see spec ... },
+      "cluster": { "links": ... see spec ... }
+    },
+    "links": ... see spec ...
+
+  }, ... see spec ...
+}
+```
+
+Include the `nodes` and `cluster` within the same request:
+
+```
+GET /groups/:id_or_fuzzy?include=nodes%2Ccluster
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": {
+    "type": "groups",
+    "id": "<id>",
+    "attributes": {
+      "name": "<group-name>",
+      "priority": <integer-priority>,
+      "params": {}
+    },
+    "relationships": {
+      "nodes": {
+        "data": [<Array-Of-Node-Resource-Identifier-Objects>],
+        "links": ... see spec ...
+      },
+      "cluster": {
+        "data": {<Cluster-Resource-Identifier-Objects>},
+        "links": ... see spec ...
+      }
+    },
+    "links": ... see spec ...
+  },
+  "included": [<Array-Of-Included-Node-Objects-And-Cluster-Object>],
+  ... see spec ...
+}
 ```
 
