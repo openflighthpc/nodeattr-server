@@ -68,7 +68,7 @@ module HasOverriddenDestroy
   end
 end
 
-module HasLevelParams
+module HasParams
   extend ActiveSupport::Concern
 
   included do
@@ -87,6 +87,14 @@ module HasLevelParams
 
     super(save_hash)
   end
+
+  def cascade_models
+    raise NotImplementedError
+  end
+
+  def cascade_params
+    cascade_models.reduce({}) { |memo, model| memo.merge(model.level_params) }
+  end
 end
 
 class Node
@@ -94,7 +102,7 @@ class Node
 
   include HasFuzzyID
   include HasOverriddenDestroy
-  include HasLevelParams
+  include HasParams
 
   has_and_belongs_to_many :groups
   belongs_to :cluster
@@ -108,10 +116,6 @@ class Node
   index({ name: 1, cluster: 1 }, { unique: true })
 
   field :name, type: String
-
-  def cascade_params
-    cascade_models.reduce({}) { |memo, model| memo.merge(model.level_params) }
-  end
 
   def cascade_models
     [cluster, *groups.sort_by { |g| -g.priority }, self]
@@ -132,7 +136,7 @@ class Group
 
   include HasFuzzyID
   include HasOverriddenDestroy
-  include HasLevelParams
+  include HasParams
 
   has_and_belongs_to_many :nodes
   belongs_to :cluster
@@ -158,8 +162,8 @@ class Group
     end
   end
 
-  def cascade_params
-    cluster.level_params.merge(level_params)
+  def cascade_models
+    [cluster, self]
   end
 
   def validates_nodes_cluster
@@ -176,7 +180,7 @@ class Cluster
   include Mongoid::Document
 
   include HasOverriddenDestroy
-  include HasLevelParams
+  include HasParams
 
   def self.find_by_name(name)
     where(name: name).first.tap do |c|
@@ -202,8 +206,8 @@ class Cluster
 
   field :name, type: String
 
-  def cascade_params
-    level_params
+  def cascade_models
+    [self]
   end
 
   def fuzzy_id

@@ -182,6 +182,10 @@ resource :groups, pkre: PKRE_REGEX do
       resource.save!
     end
   end
+
+  has_many :cascades do
+    fetch { resource.cascade_models }
+  end
 end
 
 resource :clusters, pkre: /(?:[a-zA-Z0-9]+)|(?:\.[\w-]+)/ do
@@ -217,6 +221,10 @@ resource :clusters, pkre: /(?:[a-zA-Z0-9]+)|(?:\.[\w-]+)/ do
 
   has_many :groups do
     fetch { resource.groups }
+  end
+
+  has_many :cascades do
+    fetch { resource.cascade_models }
   end
 end
 
