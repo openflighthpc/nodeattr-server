@@ -31,7 +31,7 @@ Content-Type: application/vnd.api+json
 Return all the `nodes`, `groups`, and `cascades` with the cluster:
 
 ```
-GET /clusters?include=nodes%2Cgroups
+GET /clusters?include=nodes%2Cgroups%2Ccascades
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -76,10 +76,10 @@ Content-Type: application/vnd.api+json
 }
 ```
 
-Include the `nodes` and `groups` with the request:
+Include the `nodes`, `groups`, and `cascades` with the request:
 
 ```
-GET /clusters/:id_or_fuzzy?include=nodes%2Cgroups
+GET /clusters/:id_or_fuzzy?include=nodes%2Cgroups%2Ccascades
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -283,7 +283,7 @@ HTTP/1.1 200 OK
 }
 ```
 
-### Show the Cascades for a Cluster
+### List the Cascades for a Cluster
 
 The `cascades` for a `cluster` is an array of itself. The `params` for a `cluster` are always the same as the `level_params`. The `cascades` can be retrieved by `id` or "fuzzy id". This MAY be combined with the `include` flag.
 
@@ -329,7 +329,7 @@ Return all the related `nodes`, `clusters`, and `cascades` within the same reque
 *NOTE*: This is not guaranteed to return all the `nodes` and `clusters`. Instead it only returns the resources that have been assigned to at least one `group`.
 
 ```
-GET /groups?include=nodes%2Ccluster
+GET /groups?include=nodes%2Ccluster%2Ccascades
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -378,7 +378,7 @@ Content-Type: application/vnd.api+json
 Include the `nodes`, `cluster`, and `cascades` within the same request:
 
 ```
-GET /groups/:id_or_fuzzy?include=nodes%2Ccluster
+GET /groups/:id_or_fuzzy?include=nodes%2Ccluster%2Ccascades
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
