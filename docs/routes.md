@@ -587,10 +587,37 @@ Content-Type: application/vnd.api+json
 { ... see error spec ... }
 ```
 
-*NOTE*: Undocumented Feature: Changing a Group's Cluster
+### Destroy
 
-It is possible to change the `cluster` a group belongs to by specifying the resource identifier object within the `relationships` hash (see API specifications). This action is artefact of the `create` process and is not formally supported. It MUST fail if the `group` contains ANY `nodes` to prevent them being in separate clusters.
+Permanently delete a `group` by `id` or "fuzzy id". The `nodes` are removed from the `group` and will continue to persist after the request has been fulfilled.
 
+```
+DELETE /groups/:id_or_fuzzy
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
 
+HTTP/1.1 204 No Content
+```
 
+### Show the cluster for a Group
 
+The `cluster` the group is contained within can be retrieved directly by `group_id` or "fuzzy group id". This MAY be combined with the `include` flag.
+
+```
+GET /groups/:group_id_or_fuzzy/cluster
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": {<Cluster-Object>},
+  ... see spec ...
+}
+```
+
+### Undocumented Features: Changing the Cluster for a Group
+
+It is possible to change the `cluster` a group belongs to either on `update` or directly via the `relationships` routes (see specifications). These actions are artefacts of the `create` process and are not formally supported. They MUST fail if the `group` contains ANY `nodes` to prevent them being in separate clusters.
