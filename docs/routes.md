@@ -326,7 +326,8 @@ Content-Type: application/vnd.api+json
 }
 ```
 
-Return all the `nodes` and the `cluster` within the same request:
+Return all the related `nodes` and `clusters` within the same request.
+*NOTE*: This is not guaranteed to return all the `nodes` and `clusters`. Instead it only returns the resources that have been assigned to at least one `group`.
 
 ```
 GET /groups?include=nodes%2Ccluster
@@ -338,7 +339,7 @@ HTTP/1.1 200 OK
 Content-Type: application/vnd.api+json
 {
   "data": [<Array-Of-Group-Objects],
-  "included": [<Array-Of-Included-Node-Objects-And-Cluster-Object>]
+  "included": [<Array-Of-Included-Node-And-Group-Objects>]
   ... see spec ...
 }
 ```
@@ -730,3 +731,109 @@ Content-Type: application/vnd.api+json
 }
 ```
 
+## Nodes
+
+### Fuzzy ID
+
+The "fuzzy id" for a `node` is defined as: `<cluster-name>.<node-name>` (*NOTE*: the names are delimited by a dot). Modifying the cluster or node name will naturally change the "fuzzy id".
+
+### List
+
+Return all the `nodes` across all `clusters`:
+
+```
+GET /nodes
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": [<Array-Of-Node-Objects],
+  ... see JSON:API spec ...
+}
+```
+
+Return all the related `groups` and `clusters` within the same request.
+*NOTE*: This is not guaranteed to return all the `groups` and `clusters`. Instead it only returns the resources that have been assigned to at least one `node`.
+
+```
+GET /nodes?include=groups%2Ccluster
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": [<Array-Of-Node-Objects],
+  "included": [<Array-Of-Included-Group-And-Cluster-Objects>]
+  ... see spec ...
+}
+```
+
+### Show
+
+Return a specific `node` by `id` or "fuzzy id":
+
+```
+GET /nodes/:id_or_fuzzy
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": {
+    "type": "nodes",
+    "id": "<id>",
+    "attributes": {
+      "name": "<node-name>",
+      "params": {}
+    },
+    "relationships": {
+      "groups": { "links": ... see spec ... },
+      "cluster": { "links": ... see spec ... }
+    },
+    "links": ... see spec ...
+
+  }, ... see spec ...
+}
+```
+
+Include the `groups` and `cluster` within the same request:
+
+```
+GET /nodes/:id_or_fuzzy?include=group%2Ccluster
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": {
+    "type": "nodes",
+    "id": "<id>",
+    "attributes": {
+      "name": "<node-name>",
+      "params": {}
+    },
+    "relationships": {
+      "nodes": {
+        "data": [<Array-Of-Group-Resource-Identifier-Objects>],
+        "links": ... see spec ...
+      },
+      "cluster": {
+        "data": {<Cluster-Resource-Identifier-Objects>},
+        "links": ... see spec ...
+      }
+    },
+    "links": ... see spec ...
+  },
+  "included": [<Array-Of-Included-Group-Objects-And-Cluster-Object>],
+  ... see spec ...
+}
+```
