@@ -1045,7 +1045,7 @@ It is possible to change the `cluster` a node belongs to either on `update` or d
 
 ### List the Groups a Node Belongs To
 
-The `groups` a `node` is a member of can be retrieved directly by `node_id` or "fuzzy node id". This MAY be combined with the `include` flag.
+The `groups` a `node` is a member of can be retrieved directly by `node_id` or "fuzzy node id". This MAY be combined with the `include` flag. The `groups` are always returned in reverse `priority` order.
 
 ```
 GET /nodes/:node_id_or_fuzzy/groups
@@ -1056,7 +1056,7 @@ Authorization: Bearer <jwt>
 HTTP/1.1 200 OK
 Content-Type: application/vnd.api+json
 {
-  "data": [<Array-Of-Group-Objects>],
+  "data": [<Array-Of-Reverse-Group-Objects>],
   ... see spec ...
 }
 ```

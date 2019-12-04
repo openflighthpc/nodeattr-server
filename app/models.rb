@@ -117,8 +117,12 @@ class Node
 
   field :name, type: String
 
+  def groups_by_reverse_priority
+    groups.sort_by { |g| -g.priority }
+  end
+
   def cascade_models
-    [cluster, *groups.sort_by { |g| -g.priority }, self]
+    [cluster, *groups_by_reverse_priority, self]
   end
 
   def validates_groups_cluster
