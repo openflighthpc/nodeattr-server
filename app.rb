@@ -28,20 +28,44 @@
 #===============================================================================
 
 require 'sinja/method_override'
+require 'hashie'
 
 use Sinja::MethodOverride
 register Sinja
 
 COMPOUND_ID_REGEX = /\A([[:alnum:]]+)\.([[:alnum:]]+)\Z/
 
+configure_jsonapi do |c|
+  c.conflict_exceptions << Mongoid::Errors::Validations
+  c.not_found_exceptions << Mongoid::Errors::DocumentNotFound
+
+  c.validation_exceptions << ActiveModel::ValidationError
+  c.validation_formatter = ->(e) do
+    relations = e.model.relations.keys.map(&:to_sym)
+    e.model.errors.messages.map do |src, msg|
+      relations.include?(src) ? [src, msg, 'relationships'] : [src, msg]
+    end
+  end
+end
+
 helpers do
+  def updatable_fields
+    [:name, :level_params]
+  end
+
   def updatable(**attr)
     raise Sinja::BadRequestError, <<~ERROR.squish if attr.include?(:params)
       The 'params' attribute can not be set directly. Please set the 'level-params' instead!
     ERROR
-    [:name, :level_params].each_with_object({}) do |key, memo|
+    updatable_fields.each_with_object({}) do |key, memo|
       memo[key] = attr[key] if attr.key?(key)
     end
+  end
+
+  def raise_unless_cluster_relationship(resource)
+    raise NoMethodError if data[:relationships][:cluster][:data][:id].nil?
+  rescue NoMethodError
+    resource.validate!
   end
 end
 
@@ -64,29 +88,33 @@ resource :nodes, pkre: PKRE_REGEX do
   show
 
   create do |attr|
-    node = Node.create(**updatable(attr))
+    node = Node.new(**updatable(attr))
+    raise_unless_cluster_relationship(node)
     [node.id, node]
   end
 
   update do |attr|
-    resource.update(**updatable(attr))
+    resource.update!(**updatable(attr))
     resource
   end
 
-  destroy { resource.destroy }
+  destroy { resource.destroy! }
 
   has_one :cluster do
     pluck { resource.cluster }
 
     graft(sideload_on: :create) do |rio|
       resource.cluster = Cluster.find_by_fuzzy_id(rio[:id])
-      resource.save
-      true
+      resource.save!
     end
   end
 
   has_many :group do
     fetch { resource.groups }
+  end
+
+  has_many :cascades do
+    fetch { resource.cascade_models }
   end
 end
 
@@ -94,6 +122,10 @@ resource :groups, pkre: PKRE_REGEX do
   helpers do
     def find(id)
       Group.find_by_fuzzy_id(id)
+    end
+
+    def updatable_fields
+      [*super(), :priority]
     end
   end
 
@@ -104,15 +136,17 @@ resource :groups, pkre: PKRE_REGEX do
   show
 
   create do |attr|
-    group = Group.create(**updatable(**attr))
+    group = Group.new(**updatable(**attr))
+    raise_unless_cluster_relationship(group)
     [group.id, group]
   end
 
   update do |attr|
-    resource.update(**updatable(attr))
+    resource.update!(**updatable(attr))
+    resource
   end
 
-  destroy { resource.destroy }
+  destroy { resource.destroy! }
 
   has_one :cluster do
     pluck { resource.cluster }
@@ -120,7 +154,6 @@ resource :groups, pkre: PKRE_REGEX do
     graft(sideload_on: :create) do |rio|
       resource.cluster = Cluster.find_by_fuzzy_id(rio[:id])
       resource.save!
-      true
     end
   end
 
@@ -131,27 +164,27 @@ resource :groups, pkre: PKRE_REGEX do
       defer unless resource.cluster
       resource.nodes << rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
       resource.save!
-      true
     end
 
     replace do |rios|
       resource.nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
       resource.save!
-      true
     end
 
     subtract do |rios|
       remove_nodes = rios.map { |rio| Node.find_by_fuzzy_id(rio[:id]) }
       resource.nodes = resource.nodes - remove_nodes
       resource.save!
-      true
     end
 
     clear do
       resource.nodes = []
       resource.save!
-      true
     end
+  end
+
+  has_many :cascades do
+    fetch { resource.cascade_models }
   end
 end
 
@@ -169,19 +202,29 @@ resource :clusters, pkre: /(?:[a-zA-Z0-9]+)|(?:\.[\w-]+)/ do
   show
 
   create do |attr|
-    cluster = Cluster.create(**updatable(attr))
+    cluster = Cluster.create!(**updatable(attr))
     [cluster.id, cluster]
   end
 
   update do |attr|
-    resource.update(**updatable(attr))
+    resource.update!(**updatable(attr))
     resource
   end
 
-  destroy { resource.destroy }
+  destroy do
+    resource.destroy!
+  end
 
   has_many :nodes do
     fetch { resource.nodes }
+  end
+
+  has_many :groups do
+    fetch { resource.groups }
+  end
+
+  has_many :cascades do
+    fetch { resource.cascade_models }
   end
 end
 

@@ -55,6 +55,7 @@ task require: :require_bundler do
 end
 
 task console: :require do
+  Bundler.require(:pry)
   binding.pry
 end
 

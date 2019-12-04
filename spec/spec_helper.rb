@@ -77,6 +77,10 @@ RSpec.configure do |c|
     Hashie::Mash.new(JSON.parse(last_response.body))
   end
 
+  def error_pointers
+    parse_last_response_body.errors.map { |e| e.source.pointer }
+  end
+
   def build_rio(model, fuzzy: true)
     type = JSONAPI::Serializer.find_serializer(model, {}).type
     { type: type, id: (fuzzy ? model.fuzzy_id : model.id) }

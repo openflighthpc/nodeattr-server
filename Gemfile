@@ -42,9 +42,12 @@ gem 'sinatra'
 gem 'sinja'
 
 group :development, :test do
-  gem 'pry'
-  gem 'pry-byebug'
   gem 'rerun'
+
+  group :pry do
+    gem 'pry'
+    gem 'pry-byebug'
+  end
 end
 
 group :test do

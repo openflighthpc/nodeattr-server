@@ -42,10 +42,13 @@ module HasFuzzyID
     def find_by_fuzzy_id(id)
       if id.include? '.'
         cluster_name, name = id.split('.', 2)
-        cluster = Cluster.where(name: cluster_name).first
-        where(cluster: cluster, name: name).first
+        cluster = Cluster.find_by_name(cluster_name)
+        where(cluster: cluster, name: name).first.tap do |n|
+          next if n
+          raise Mongoid::Errors::DocumentNotFound.new(self, cluster: cluster, name: name)
+        end
       else
-        where(id: id).first
+        find(id)
       end
     end
   end
@@ -55,24 +58,71 @@ module HasFuzzyID
   end
 end
 
+# This causes destroy! to raise an AcitveModel::ValidationError instead of a
+# generic mongoid error. This allows the top level error handling to better
+# respond with the exact cause of the error
+module HasOverriddenDestroy
+  def destroy!(*a, &b)
+    destroy(*a, &b)
+    errors.any? ? raise(ActiveModel::ValidationError.new(self)) : true
+  end
+end
+
+module HasParams
+  extend ActiveSupport::Concern
+
+  included do
+    field :level_params, type: Hash, default: {}
+  end
+
+  def level_params=(hash)
+    nil_proc = ->(_, v) { v.nil? }
+    new_hash = hash.reject(&nil_proc).to_h
+    nil_keys = hash.select(&nil_proc).keys
+
+    merged_hash = level_params.merge(new_hash)
+    save_hash = nil_keys.each_with_object(merged_hash) do |key, memo|
+      memo.delete(key)
+    end
+
+    super(save_hash)
+  end
+
+  def cascade_models
+    raise NotImplementedError
+  end
+
+  def cascade_params
+    cascade_models.reduce({}) { |memo, model| memo.merge(model.level_params) }
+  end
+end
+
 class Node
   include Mongoid::Document
 
   include HasFuzzyID
+  include HasOverriddenDestroy
+  include HasParams
 
   has_and_belongs_to_many :groups
-  belongs_to :cluster, optional: true
+  belongs_to :cluster
 
+  validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
   validate :validates_groups_cluster
 
+  index({ cluster: 1 })
+  index({ cluster: 1, group: 1 })
   index({ name: 1, cluster: 1 }, { unique: true })
 
   field :name, type: String
-  field :level_params, type: Hash, default: {}
 
-  def cascade_params
-    level_params
+  def groups_by_reverse_priority
+    groups.sort_by { |g| -g.priority }
+  end
+
+  def cascade_models
+    [cluster, *groups_by_reverse_priority, self]
   end
 
   def validates_groups_cluster
@@ -89,20 +139,35 @@ class Group
   include Mongoid::Document
 
   include HasFuzzyID
+  include HasOverriddenDestroy
+  include HasParams
 
   has_and_belongs_to_many :nodes
-  belongs_to :cluster, optional: true
+  belongs_to :cluster
 
+  validates :cluster, presence: true
   validates :name, presence: true, uniqueness: { scope: :cluster }
+  validates :priority, presence: true, uniqueness: { scope: :cluster }
   validate :validates_nodes_cluster
 
+  index({ cluster: 1 })
+  index({ priority: 1 })
   index({ name: 1, cluster: 1 }, { unique: true })
+  index({ priority: 1, cluster: 1 }, { unique: true})
 
   field :name, type: String
-  field :level_params, type: Hash, default: {}
+  field :priority, type: Integer
 
-  def cascade_params
-    level_params
+  # Set the priority before validated as this ensures the cluster has been set
+  before_validation do
+    unless priority
+      rounded = (self.class.where(cluster: cluster).max(:priority) || 0).round(-2)
+      self.priority = rounded + 100
+    end
+  end
+
+  def cascade_models
+    [cluster, self]
   end
 
   def validates_nodes_cluster
@@ -118,26 +183,35 @@ end
 class Cluster
   include Mongoid::Document
 
-  def self.find_by_fuzzy_id(id)
-    if id.first == '.'
-      Cluster.where(name: id[1..-1]).first
-    else
-      where(id: id).first
+  include HasOverriddenDestroy
+  include HasParams
+
+  def self.find_by_name(name)
+    where(name: name).first.tap do |c|
+      next if c
+      raise Mongoid::Errors::DocumentNotFound.new(self, name: name)
     end
   end
 
-  has_many :nodes
-  has_many :groups
+  def self.find_by_fuzzy_id(id)
+    if id.first == '.'
+      find_by_name(id[1..-1])
+    else
+      find(id)
+    end
+  end
+
+  has_many :nodes, dependent: :restrict_with_error
+  has_many :groups, dependent: :restrict_with_error
 
   validates :name, presence: true, uniqueness: true
 
   index({ name: 1 }, { unique: true })
 
   field :name, type: String
-  field :level_params, type: Hash, default: {}
 
-  def cascade_params
-    level_params
+  def cascade_models
+    [self]
   end
 
   def fuzzy_id

@@ -27,6 +27,8 @@
 # https://github.com/openflighthpc/nodeattr-server
 #===============================================================================
 
+require 'spec_helper'
+
 RSpec.describe Node do
   context 'when changing clusters with an existing group' do
     let(:cluster) { create(:cluster) }
@@ -55,18 +57,81 @@ RSpec.describe Node do
       expect(described_class.find_by_fuzzy_id(fuzzy_id)).to eq(subject)
     end
 
-    it 'returns nil if the cluster is missing' do
-      subject.cluster.delete
-      expect(described_class.find_by_fuzzy_id(fuzzy_id)).to be_nil
-    end
-
     it 'returns nil if the node is missing' do
       subject.delete
-      expect(described_class.find_by_fuzzy_id(fuzzy_id)).to be_nil
+      expect do
+        described_class.find_by_fuzzy_id(fuzzy_id)
+      end.to raise_error(Mongoid::Errors::DocumentNotFound)
     end
 
     it 'returns nil for garbage regular id strings' do
-      expect(described_class.find_by_fuzzy_id('garbage')).to be_nil
+      expect do
+        described_class.find_by_fuzzy_id('garbage')
+      end.to raise_error(Mongoid::Errors::DocumentNotFound)
+    end
+  end
+
+  describe '#level_params=' do
+    subject { create(:node, level_params: { initial_key => initial_value }) }
+    let(:initial_key) { 'initial-key' }
+    let(:initial_value) { 'some-initial-value-in-let' }
+    let(:key) { 'test-key' }
+    let(:value) { 'value-set-in-let' }
+
+    it 'can set a value' do
+      subject.level_params = { key => value }
+      expect(subject.level_params[key]).to eq(value)
+    end
+
+    it 'does not save nil values' do
+      subject.level_params = { initial_key => nil }
+      expect(subject.level_params.keys).not_to include(initial_key)
+    end
+
+    it 'does not alter other keys' do
+      subject.level_params = { key => value }
+      subject.level_params = { key => nil }
+      expect(subject.level_params[initial_key]).to eq(initial_value)
+    end
+
+    it 'can set false' do
+      subject.level_params = { key => false }
+      expect(subject.level_params[key]).to be false
+    end
+  end
+
+  describe '#cascade_params' do
+    def create_group(type, priority)
+      idx = keys.find_index(type)
+      params = keys[idx..-1].map { |k| [k, "#{type}-#{k}"] }.to_h
+      create(:group,
+             name: type.to_s,
+             cluster: cluster,
+             priority: priority,
+             level_params: params)
+    end
+
+    let(:keys) { [:cluster, :high, :medium, :low, :node] }
+    let(:cluster) do
+      params = keys.map { |k| [k, "cluster-#{k}"] }.to_h
+      create(:cluster, level_params: params)
+    end
+    let(:high) { create_group(:high, 100) }
+    let(:medium) { create_group(:medium, 10) }
+    let(:low) { create_group(:low, 1) }
+
+    subject do
+      create(:node,
+             name: 'node',
+             cluster: cluster,
+             groups: [medium, high, low],
+             level_params: { node: 'node-node' })
+    end
+
+    it 'sets each key at the corresponding level' do
+      keys.each do |key|
+        expect(subject.cascade_params[key]).to eq("#{key}-#{key}")
+      end
     end
   end
 end

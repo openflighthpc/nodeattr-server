@@ -72,6 +72,17 @@ RSpec.describe '/groups' do
     end
   end
 
+  context 'when making an update request with a priority attribute' do
+    it 'can update the priority' do
+      group = create(:group)
+      new_priority = group.priority + 1
+      admin_headers
+      patch path(group.fuzzy_id), build_payload(group, attributes: { priority: new_priority }).to_json
+      group.reload
+      expect(group.priority).to eq(new_priority)
+    end
+  end
+
   context 'when creating a group with a cluster by fuzzy id' do
     let(:cluster) { create(:cluster) }
     let(:attributes) { { name: subject.name } }
@@ -110,6 +121,21 @@ RSpec.describe '/groups' do
     it 'adds the nodes to the group' do
       group = Group.where(name: subject.name, cluster: cluster).first
       expect(group.nodes).to contain_exactly(*nodes)
+    end
+  end
+
+  context 'when creating a group without a cluster' do
+    let(:payload) { build_payload(subject) }
+    subject { build(:group, cluster: nil) }
+
+    before do
+      admin_headers
+      post path, payload.to_json
+    end
+
+    it 'responds unprocessable' do
+      expect(last_response).to be_unprocessable
+      expect(error_pointers).to include('/data/relationships/cluster')
     end
   end
 

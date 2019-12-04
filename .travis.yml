@@ -5,6 +5,9 @@ install:
   - gem update bundler
   - bundle install
 
+services:
+  - mongodb
+
 rvm:
   - 2.4.6
   - 2.5.5
