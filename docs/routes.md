@@ -602,7 +602,7 @@ HTTP/1.1 204 No Content
 
 ### Show the cluster for a Group
 
-The `cluster` the group is contained within can be retrieved directly by `group_id` or "fuzzy group id". This MAY be combined with the `include` flag.
+The `cluster` for a `group` can be retrieved directly by `group_id` or "fuzzy group id". This MAY be combined with the `include` flag.
 
 ```
 GET /groups/:group_id_or_fuzzy/cluster
@@ -621,3 +621,112 @@ Content-Type: application/vnd.api+json
 ### Undocumented Features: Changing the Cluster for a Group
 
 It is possible to change the `cluster` a group belongs to either on `update` or directly via the `relationships` routes (see specifications). These actions are artefacts of the `create` process and are not formally supported. They MUST fail if the `group` contains ANY `nodes` to prevent them being in separate clusters.
+
+### Show the Nodes in a Group
+
+The `nodes` within the `group` can be retrieved directly by `group_id` or "fuzzy group id". This MAY be combined with the `include` flag.
+
+```
+GET /groups/:group_id_or_fuzzy/nodes
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": [<Array-Of-Node-Object>],
+  ... see spec ...
+}
+```
+
+### Add Nodes to a Group
+
+New `nodes` maybe added to the `group` by `id` or "fuzzy id". The request MAY use a combination of `ids` and "fuzzy ids" within the different objects. Existing `node` memberships within the group will persist after this request.
+
+```
+POST /groups/:group_id_or_fuzzy/nodes
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{
+  "data": [
+    { "type": "nodes', "id": "<first_node_id_or_fuzzy>" },
+    { "type": "nodes", "id": "<second_node_id_or_fuzzy>" },
+    ...
+  ]
+}
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": [Array-Of-Node-Resource-Identifier-Objects],
+  ... see spec ...
+}
+```
+
+### Replace Nodes within a Group
+
+The `nodes` within a `group` can be replace by `id` or "fuzzy id". The request MAY use a combination of `ids` and "fuzzy ids" within the different objects. All existing `node` memberships within the group will be removed and replaced by those specified within the request. Proceed with caution!
+
+```
+PATCH /groups/:group_id_or_fuzzy/nodes
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{
+  "data": [Array-Of-Node-Resource-Identifier-Objects]
+}
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": [Array-Of-Node-Resource-Identifier-Objects],
+  ... see spec ...
+}
+```
+
+### Remove Nodes from a Group
+
+A set of `nodes` can be removed from the group by `id` or "fuzzy id". The request MAY use a combination of `ids` and "fuzzy ids" within the different objects. The `nodes` specified within the request will be removed from the `group` if the membership exists; whilst missing memberships are ignored. All other `node` memberships will persist after the request has been fulfilled.
+
+The response contains the resource identifier objects for the remaining `nodes`.
+
+```
+DELETE /groups/:group_id_or_fuzzy/nodes
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{
+  "data": [Array-Of-Node-Resource-Identifier-Objects]
+}
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": [Array-Of-Remaining-Node-Resource-Identifier-Objects],
+  ... see spec ...
+}
+```
+
+### Remove All the Nodes from a Group
+
+All the `nodes` can be removed from a group by `id` or "fuzzy id". This will always remove all the nodes from the `group` and return an empty data set.
+
+```
+PATCH /groups/:id_or_fuzzy/nodes
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{
+  "data": []
+}
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": [],
+  ... see spec ...
+}
+```
+
