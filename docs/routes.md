@@ -159,7 +159,7 @@ Content-Type: application/vnd.api+json
 
 Update an existing `cluster` by `id` or "fuzzy id". The `id`/"fuzzy id" in the request route MUST match the body.
 
-The `level_params` are merged into the existing values instead of doing a replace. This is a deviation from the `JSON:API` specifications. An existing `level_params` key can be unset by specifically setting them to `null`.
+The `level_params` are merged into the existing values instead of doing a replace. This is a deviation from the `JSON:API` specifications. An existing `level_params` keys can be unset by specifically setting them to `null`.
 
 The `name` MAY be changed with this request, but it will result in the "fuzzy id" changing for both itself and any dependent `nodes` and `groups`.
 
@@ -505,3 +505,92 @@ Content-Type: application/vnd.api+json
   }]
 }
 ```
+
+### Update
+
+Update an existing `group` by `id` or "fuzzy id". The `id`/"fuzzy id" must match the request body.
+
+The optional `level_params` attribute will be merged with the existing values instead of doing a direct replacement. An existing `level_params` keys can be unset by specifically setting them to `null`.
+
+The `name` attribute MAY be changed with this request, but it will result in the "fuzzy id" changing.
+
+```
+PATCH /groups/:id_or_fuzzy
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{
+  "data": {
+    "type": "groups",
+    "id": "<id_or_fuzzy>",
+    "attributes": {
+      "name": "new-name",
+      "level_params": {
+        "key1": "new-value",
+        "delete-me": null,
+        "new-key": "value", ...
+      }
+    }
+  }
+}
+
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": {<Updated-Group-Object>},
+  ... see spec ...
+}
+```
+
+The `nodes` relationship can be optionally replaced when updating the `group`. This will remove all the existing nodes from the `group` and add the resources specified within the request. Proceed with caution!
+
+```
+PATCH /groups/:id_or_fuzzy
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{
+  "data": {
+    "type": "groups",
+    "id": "<id_or_fuzzy>",
+    "relationships": {
+      "nodes": {
+        "data": [<Array-Of-Node-Resource-Identifier-Objects>]
+      }
+    }
+  }
+}
+
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": {<Updated-Group-Object>},
+  ... see spec ...
+}
+
+```
+
+An error will be return if the `name` has already been taken:
+
+```
+PATCH /groups/:id_or_fuzzy
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{ ... as above ... }
+
+
+HTTP/1.1 409 Conflict
+Content-Type: application/vnd.api+json
+{ ... see error spec ... }
+```
+
+*NOTE*: Undocumented Feature: Changing a Group's Cluster
+
+It is possible to change the `cluster` a group belongs to by specifying the resource identifier object within the `relationships` hash (see API specifications). This action is artefact of the `create` process and is not formally supported. It MUST fail if the `group` contains ANY `nodes` to prevent them being in separate clusters.
+
+
+
+
