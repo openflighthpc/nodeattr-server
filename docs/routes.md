@@ -535,7 +535,6 @@ Authorization: Bearer <jwt>
   }
 }
 
-
 HTTP/1.1 200 OK
 Content-Type: application/vnd.api+json
 {
@@ -563,7 +562,6 @@ Authorization: Bearer <jwt>
   }
 }
 
-
 HTTP/1.1 200 OK
 Content-Type: application/vnd.api+json
 {
@@ -581,7 +579,6 @@ Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 { ... as above ... }
-
 
 HTTP/1.1 409 Conflict
 Content-Type: application/vnd.api+json
@@ -895,7 +892,6 @@ Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
 { ... as above ... }
 
-
 HTTP/1.1 409 Conflict
 Content-Type: application/vnd.api+json
 { ... see error spec ... }
@@ -917,7 +913,6 @@ Authorization: Bearer <jwt>
   }
 }
 
-
 HTTP/1.1 422 Unprocessable Entity
 Content-Type: application/vnd.api+json
 {
@@ -931,5 +926,55 @@ Content-Type: application/vnd.api+json
     }
   }]
 }
+```
+
+### Update
+
+Update an existing `node` by `id` or "fuzzy id". The `id`/"fuzzy id" must match the request body.
+
+The optional `level_params` attribute will be merged with the existing values instead of doing a direct replacement. An existing `level_params` keys can be unset by specifically setting them to `null`.
+
+The `name` attribute MAY be changed with this request, but it will result in the "fuzzy id" changing.
+
+```
+PATCH /nodes/:id_or_fuzzy
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{
+  "data": {
+    "type": "nodes",
+    "id": "<id_or_fuzzy>",
+    "attributes": {
+      "name": "new-name",
+      "level_params": {
+        "key1": "new-value",
+        "delete-me": null,
+        "new-key": "value", ...
+      }
+    }
+  }
+}
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": {<Updated-Nide-Object>},
+  ... see spec ...
+}
+```
+
+An error will be return if the `name` has already been taken:
+
+```
+PATCH /nodes/:id_or_fuzzy
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{ ... as above ... }
+
+HTTP/1.1 409 Conflict
+Content-Type: application/vnd.api+json
+{ ... see error spec ... }
 ```
 
