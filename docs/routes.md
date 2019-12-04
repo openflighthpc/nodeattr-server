@@ -837,3 +837,99 @@ Content-Type: application/vnd.api+json
   ... see spec ...
 }
 ```
+
+### Create
+
+Create a new `node` resource. The `id` MUST NOT be set with the request.
+
+The `name` MUST be set and unique within the corresponding `cluster`. A valid `cluster` resource identifier object MUST be set as a relationship. Additional `group` resource identifier objects MAY be sent as the `groups` relationship. The `level_params` are optional and MAY be set with the request.
+
+```
+POST /nodes
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{
+  "data": {
+    "type": "nodes",
+    "attributes": {
+      "name": "<node-name>",
+      "level_params": {
+        "key1": "value1",
+        "key2": "value":, ...
+      }
+    },
+    "relationships": {
+      "cluster": {
+        "data": {
+          "type": 'clusters',
+          "id": "<cluster_id_or_fuzzy>"
+        }
+      },
+      "groups": {
+        "data": [
+          {
+            "type": "groups",
+            "id": "<group_id_or_fuzzy>"
+          }, ...
+        ]
+      }
+    }
+  }
+}
+
+HTTP/1.1 201 Created
+Content-Type: application/vnd.api+json
+{
+  "data": {<Created-Node-Object>},
+  ... see spec ...
+}
+```
+
+An error will be returned if the `name` has already been taken within the `cluster`:
+
+```
+POST /nodes
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{ ... as above ... }
+
+
+HTTP/1.1 409 Conflict
+Content-Type: application/vnd.api+json
+{ ... see error spec ... }
+```
+
+An error will be returned if the `cluster` relationship is missing:
+
+```
+POST /nodes
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+{
+  "data": {
+    "type": "nodes",
+    "attributes": {
+      "name": "<node-name>"
+    }
+  }
+}
+
+
+HTTP/1.1 422 Unprocessable Entity
+Content-Type: application/vnd.api+json
+{
+  "errors": [{
+    "id": "<request-id>",
+    "title": "<error-title>",
+    "detail": "<missing-cluster-error-message>",
+    "status": 422,
+    "source": {
+      "pointer": "/data/relationships/cluster"
+    }
+  }]
+}
+```
+
