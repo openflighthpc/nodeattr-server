@@ -633,7 +633,7 @@ Authorization: Bearer <jwt>
 HTTP/1.1 200 OK
 Content-Type: application/vnd.api+json
 {
-  "data": [<Array-Of-Node-Object>],
+  "data": [<Array-Of-Node-Objects>],
   ... see spec ...
 }
 ```
@@ -792,7 +792,8 @@ Content-Type: application/vnd.api+json
     },
     "relationships": {
       "groups": { "links": ... see spec ... },
-      "cluster": { "links": ... see spec ... }
+      "cluster": { "links": ... see spec ... },
+      "cascades": { "links": ... see spec ... }
     },
     "links": ... see spec ...
 
@@ -800,10 +801,10 @@ Content-Type: application/vnd.api+json
 }
 ```
 
-Include the `groups`,`cluster`, and `cascades` within the same request. The `cascades` is an array of resources that defines the merge order of the `params`. It always starts with the `cluster`, lists the `groups` in reverse `priority` order, and then ends with the `node` itself.
+Include the `groups`,`cluster`, and `cascades` within the same request:
 
 ```
-GET /nodes/:id_or_fuzzy?include=group%2Ccluster
+GET /nodes/:id_or_fuzzy?include=group%2Ccluster%2Ccascades
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -1016,4 +1017,40 @@ Content-Type: application/vnd.api+json
 ### Undocumented Features: Changing the Cluster for a Node
 
 It is possible to change the `cluster` a node belongs to either on `update` or directly via the `relationships` routes (see specifications). These actions are artefacts of the `create` process and are not formally supported. They MUST fail if the `node` has ANY `group` memberships; to prevent them being in separate clusters.
+
+### List the Groups a Node Belongs To
+
+The `groups` a `node` is a member of can be retrieved directly by `node_id` or "fuzzy node id". This MAY be combined with the `include` flag.
+
+```
+GET /nodes/:node_id_or_fuzzy/groups
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": [<Array-Of-Group-Objects>],
+  ... see spec ...
+}
+```
+
+### List the Cascading Objects for a Node
+
+The `cascades` is an array of objects that dictate the `merge` order for the `params`. It always starts with the `cluster`, then it lists the `groups` in reverse `priority` order, before ending with the `node` itself.
+
+```
+GET /nodes/:node_id_or_fuzzy/cascades
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": [<Array-Of-Cluster-Object-Reverse-Group-Objects-Node-Object>],
+  ... see spec ...
+}
+```
 
