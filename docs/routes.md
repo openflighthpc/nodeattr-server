@@ -752,11 +752,11 @@ Content-Type: application/vnd.api+json
 }
 ```
 
-Return all the related `groups` and `clusters` within the same request.
+Return all the related `groups`, `clusters`, and `cascades` within the same request.
 *NOTE*: This is not guaranteed to return all the `groups` and `clusters`. Instead it only returns the resources that have been assigned to at least one `node`.
 
 ```
-GET /nodes?include=groups%2Ccluster
+GET /nodes?include=groups%2Ccluster%2Ccascades
 Content-Type: application/vnd.api+json
 Accept: application/vnd.api+json
 Authorization: Bearer <jwt>
@@ -800,7 +800,7 @@ Content-Type: application/vnd.api+json
 }
 ```
 
-Include the `groups` and `cluster` within the same request:
+Include the `groups`,`cluster`, and `cascades` within the same request. The `cascades` is an array of resources that defines the merge order of the `params`. It always starts with the `cluster`, lists the `groups` in reverse `priority` order, and then ends with the `node` itself.
 
 ```
 GET /nodes/:id_or_fuzzy?include=group%2Ccluster
@@ -826,7 +826,11 @@ Content-Type: application/vnd.api+json
       "cluster": {
         "data": {<Cluster-Resource-Identifier-Objects>},
         "links": ... see spec ...
-      }
+      },
+      "cascades:" [
+        "data": [<Array-Of-Cluster-Group-Node-Resource-Identifier-Objects>],
+        "links": ... see spec ...
+      ]
     },
     "links": ... see spec ...
   },
@@ -976,5 +980,18 @@ Authorization: Bearer <jwt>
 HTTP/1.1 409 Conflict
 Content-Type: application/vnd.api+json
 { ... see error spec ... }
+```
+
+### Destroy
+
+Permanently delete a `node` by `id` or "fuzzy id". The `node` is removed from it `groups` before it is deleted.
+
+```
+DELETE /groups/:id_or_fuzzy
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 204 No Content
 ```
 
