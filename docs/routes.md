@@ -995,3 +995,25 @@ Authorization: Bearer <jwt>
 HTTP/1.1 204 No Content
 ```
 
+### Show the cluster for a Node
+
+The `cluster` for a `node` can be retrieved directly by `node_id` or "fuzzy node id". This MAY be combined with the `include` flag.
+
+```
+GET /nodes/:node_id_or_fuzzy/cluster
+Content-Type: application/vnd.api+json
+Accept: application/vnd.api+json
+Authorization: Bearer <jwt>
+
+HTTP/1.1 200 OK
+Content-Type: application/vnd.api+json
+{
+  "data": {<Cluster-Object>},
+  ... see spec ...
+}
+```
+
+### Undocumented Features: Changing the Cluster for a Node
+
+It is possible to change the `cluster` a node belongs to either on `update` or directly via the `relationships` routes (see specifications). These actions are artefacts of the `create` process and are not formally supported. They MUST fail if the `node` has ANY `group` memberships; to prevent them being in separate clusters.
+
