@@ -16,6 +16,7 @@ The following are required to run this application:
 * OS:           Centos7
 * Ruby:         2.6+
 * Yum Packages: gcc
+* [Mongodb](https://docs.mongodb.com/manual/installation/)
 
 ### Manual installation
 
@@ -46,6 +47,20 @@ export jwt_shared_secret=<keep-this-secret-safe>
 
 # Or hard code them in the config file:
 vim config/application.yaml
+```
+
+It is assumed that the `mongodb` server is running on the default port: `localhost:27017`. Refer to the `mongoid` [configuration documentation](https://docs.mongodb.com/mongoid/current/tutorials/mongoid-configuration) to configure the application with a different server. The config should be stored as `config/mongoid.yml`.
+
+### Adding the Indexes to MongoDB
+
+As mongo is nosql database, the indexing is not strictly necessary. Instead it will provide performance enhancements and adds a data integrity checks at the `db` level in addition to `application` logic.
+
+```
+# Add the indexes
+rake db:mongoid:create_indexes
+
+# Remove the indexes
+rake db:mongoid:remove_indexes
 ```
 
 ### Setting Up Systemd
