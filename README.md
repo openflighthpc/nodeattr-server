@@ -82,6 +82,8 @@ rake db:mongoid:remove_indexes
 
 A basic `systemd` unit file can be found [here](support/nodeattr-server.service). The unit file will need to be tweaked according to where the application has been installed/configured. The unit needs to be stored within `/etc/systemd/system`.
 
+*NOTE:* The logging directory must exist, otherwise the app will crash when it receives its first request
+
 ## Starting the Server
 
 The `puma` server daemon can be started manually with:
