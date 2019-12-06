@@ -68,6 +68,12 @@ module HasOverriddenDestroy
   end
 end
 
+module HasGroupsByReversePriority
+  def groups_by_reverse_priority
+    groups.sort_by { |g| -g.priority }
+  end
+end
+
 module HasParams
   extend ActiveSupport::Concern
 
@@ -103,6 +109,7 @@ class Node
   include HasFuzzyID
   include HasOverriddenDestroy
   include HasParams
+  include HasGroupsByReversePriority
 
   has_and_belongs_to_many :groups
   belongs_to :cluster
@@ -116,10 +123,6 @@ class Node
   index({ name: 1, cluster: 1 }, { unique: true })
 
   field :name, type: String
-
-  def groups_by_reverse_priority
-    groups.sort_by { |g| -g.priority }
-  end
 
   def cascade_models
     [cluster, *groups_by_reverse_priority, self]
@@ -185,6 +188,7 @@ class Cluster
 
   include HasOverriddenDestroy
   include HasParams
+  include HasGroupsByReversePriority
 
   def self.find_by_name(name)
     where(name: name).first.tap do |c|
