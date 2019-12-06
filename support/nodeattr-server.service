@@ -1,6 +1,7 @@
 [Unit]
 Description=Flight Nodeattr Server
-Requires=network.target mongodb.service
+Requires=network.target
+Wants=mongodb.service
 
 [Service]
 Type=simple
@@ -11,7 +12,7 @@ WorkingDirectory=/opt/flight/opt/nodeattr-server
 
 # The application must be fully configured within the user's environment OR
 # within 'config/application.yaml'
-ExecStart=bin/puma -p 6301 -e production -d \
+ExecStart=/opt/flight/opt/nodeattr-server/bin/puma -p 6301 -e production -d \
             --redirect-stdout /opt/flight/log/nodeattr-server.log \
             --redirect-stderr /opt/flight/log/nodeattr-server.log
 
