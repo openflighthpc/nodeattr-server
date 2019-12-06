@@ -16,6 +16,7 @@ The following are required to run this application:
 * OS:           Centos7
 * Ruby:         2.6+
 * Yum Packages: gcc
+* [Mongodb](https://docs.mongodb.com/manual/installation/)
 
 ### Manual installation
 
@@ -34,23 +35,50 @@ bundle install --without development test --path vendor
 bin/bundle install --without development test --path vendor
 ```
 
-Additional configuration is required for the `aws` and `az` command lines to work. Please refer to there reference documents on how to install them. This service assumes they have been pre installed and configured with the appropriate credentials.
+The application connects to a `mongodb` server running on localhost by default. [Refer here how to install mongodb](https://docs.mongodb.com/manual/installation/). In short, to install `mongodb` on "redhat" linux:
+
+```
+cat <<'EOF' > /etc/yum.repos.d/mongodb-org-4.2.repo
+[mongodb-org-4.2]
+name=MongoDB Repository
+baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/4.2/x86_64/
+gpgcheck=1
+enabled=1
+gpgkey=https://www.mongodb.org/static/pgp/server-4.2.asc
+EOF
+
+sudo yum install -y mongodb-org
+sudo systemctl enable mongod
+sudo systemctl start mongod
+```
 
 ### Configuration
 
-The application needs the following configuration values in order to run. These can either be exported into your environment or directly set in `config/application.yaml`.
+The only configuration value required by the server directly is the `jwt_shared_secret`. This must be exported into the environment.
 
 ```
-# Either set them into the environment
 export jwt_shared_secret=<keep-this-secret-safe>
+```
 
-# Or hard code them in the config file:
-vim config/application.yaml
+It is assumed that the `mongodb` server is running on the default port: `localhost:27017`. Refer to the `mongoid` [configuration documentation](https://docs.mongodb.com/mongoid/current/tutorials/mongoid-configuration) to configure the application with a different server. The config should be stored as `config/mongoid.yml`.
+
+### Adding the Indexes to MongoDB
+
+As mongo is nosql database, the indexing is not strictly necessary. Instead it will provide performance enhancements and adds a data integrity checks at the `db` level in addition to `application` logic.
+
+```
+# Add the indexes
+rake db:mongoid:create_indexes
+
+# Remove the indexes
+rake db:mongoid:remove_indexes
 ```
 
 ### Setting Up Systemd
 
 A basic `systemd` unit file can be found [here](support/nodeattr-server.service). The unit file will need to be tweaked according to where the application has been installed/configured. The unit needs to be stored within `/etc/systemd/system`.
+
+*NOTE:* The logging directory must exist, otherwise the app will crash when it receives its first request
 
 ## Starting the Server
 
@@ -70,7 +98,7 @@ kill -s SIGINT <puma-pid>
 
 ## Authentication
 
-The API requires all requests to carry with a [jwt](https://jwt.io). Within the token either `user: true` or `admin: true` needs to be set. This will authenticate with either `user` or `admin` privileges respectively. Admins have full access to the API where users can only make `GET` requests.
+The API requires all requests to carry with a [jwt](https://jwt.io). Admin tokens must set the `admin` flag to `true` within their body. All other valid tokens are assumed to have `user` level privileges. Admins have full `read`/`write` access, where a `user` only has `read` access.
 
 The following `rake` tasks are used to generate tokens with 30 days expiry. Tokens from other sources will be accepted as long as they:
 1. Where signed with the same shared secret,
@@ -81,6 +109,9 @@ As the shared secret is environment dependant, the `RACK_ENV` must be set within
 ```
 # Set the rack environment
 export RACK_ENV=production
+
+# Generate a user token
+rake token:admin
 
 # Generate a user token
 rake token:user

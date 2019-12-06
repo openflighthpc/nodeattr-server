@@ -31,7 +31,7 @@ class NodeSerializer
   include JSONAPI::Serializer
 
   has_one :cluster
-  has_many :groups
+  has_many(:groups) { object.groups_by_reverse_priority }
 
   has_many(:cascades) { object.cascade_models }
 

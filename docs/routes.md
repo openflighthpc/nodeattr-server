@@ -285,7 +285,7 @@ HTTP/1.1 200 OK
 
 ### List the Cascades for a Cluster
 
-The `cascades` for a `cluster` is an array of itself. The `params` for a `cluster` are always the same as the `level_params`. The `cascades` can be retrieved by `id` or "fuzzy id". This MAY be combined with the `include` flag.
+The `cascades` for a `cluster` is an array of itself. The `params` for a `cluster` are always the same as the `level_params`. The `cascades` can be retrieved by `id` or "fuzzy id".
 
 ```
 GET /clusters/:id_or_fuzzy/cacades
@@ -734,7 +734,7 @@ Content-Type: application/vnd.api+json
 
 ### Show the Cascades for a Group
 
-The `cascades` for a `group` dictate the merge order for the `params`. They can be retrieved by `group_id` or "fuzzy group id". The `cascades` is always an array of the `cluster` then the `group`. This MAY be combined with the `include` flag.
+The `cascades` for a `group` dictate the merge order for the `params`. They can be retrieved by `group_id` or "fuzzy group id". The `cascades` is always an array of the `cluster` then the `group`.
 
 ```
 GET /groups/:group_id_or_fuzzy/cacades

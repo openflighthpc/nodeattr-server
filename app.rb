@@ -34,6 +34,7 @@ use Sinja::MethodOverride
 register Sinja
 
 COMPOUND_ID_REGEX = /\A([[:alnum:]]+)\.([[:alnum:]]+)\Z/
+BEARER_REGEX = /\ABearer\s(.*)\Z/
 
 configure_jsonapi do |c|
   c.conflict_exceptions << Mongoid::Errors::Validations
@@ -46,6 +47,31 @@ configure_jsonapi do |c|
       relations.include?(src) ? [src, msg, 'relationships'] : [src, msg]
     end
   end
+
+  # Resource roles
+  c.default_roles = {
+    index: [:user, :admin],
+    show: [:user, :admin],
+    create: :admin,
+    update: :admin,
+    destroy: :admin
+  }
+
+  # To-one relationship roles
+  c.default_has_one_roles = {
+    pluck: [:user, :admin],
+    prune: :admin,
+    graft: :admin
+  }
+
+  # To-many relationship roles
+  c.default_has_many_roles = {
+    fetch: [:user, :admin],
+    clear: :admin,
+    replace: :admin,
+    merge: :admin,
+    subtract: :admin
+  }
 end
 
 helpers do
@@ -66,6 +92,25 @@ helpers do
     raise NoMethodError if data[:relationships][:cluster][:data][:id].nil?
   rescue NoMethodError
     resource.validate!
+  end
+
+  def jwt_token
+    if match = BEARER_REGEX.match(env['HTTP_AUTHORIZATION'] || '')
+      match.captures.first
+    else
+      ''
+    end
+  end
+
+  def role
+    token = Token.from_jwt(jwt_token)
+    if token.admin && token.valid
+      :admin
+    elsif token.valid
+      :user
+    else
+      :unknown
+    end
   end
 end
 
