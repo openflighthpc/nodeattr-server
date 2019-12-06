@@ -30,6 +30,8 @@
 require 'hashie'
 require 'jwt'
 
+Figaro.require_keys 'jwt_shared_secret'
+
 class Token < Hashie::Trash
   include Hashie::Extensions::IgnoreUndeclared
 

@@ -54,14 +54,10 @@ sudo systemctl start mongod
 
 ### Configuration
 
-The application needs the following configuration values in order to run. These can either be exported into your environment or directly set in `config/application.yaml`.
+The only configuration value required by the server directly is the `jwt_shared_secret`. This must be exported into the environment.
 
 ```
-# Either set them into the environment
 export jwt_shared_secret=<keep-this-secret-safe>
-
-# Or hard code them in the config file:
-vim config/application.yaml
 ```
 
 It is assumed that the `mongodb` server is running on the default port: `localhost:27017`. Refer to the `mongoid` [configuration documentation](https://docs.mongodb.com/mongoid/current/tutorials/mongoid-configuration) to configure the application with a different server. The config should be stored as `config/mongoid.yml`.
