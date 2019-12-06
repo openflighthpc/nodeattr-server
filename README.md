@@ -38,7 +38,7 @@ bin/bundle install --without development test --path vendor
 The application connects to a `mongodb` server running on localhost by default. [Refer here how to install mongodb](https://docs.mongodb.com/manual/installation/). In short, to install `mongodb` on "redhat" linux:
 
 ```
-cat <<EOF > /etc/yum.repos.d/mongodb-org-4.2.repo
+cat <<'EOF' > /etc/yum.repos.d/mongodb-org-4.2.repo
 [mongodb-org-4.2]
 name=MongoDB Repository
 baseurl=https://repo.mongodb.org/yum/redhat/$releasever/mongodb-org/4.2/x86_64/

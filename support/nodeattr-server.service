@@ -1,7 +1,7 @@
 [Unit]
 Description=Flight Nodeattr Server
 Requires=network.target
-Wants=mongodb.service
+Wants=mongod.service
 
 [Service]
 Type=simple
