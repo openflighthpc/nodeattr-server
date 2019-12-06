@@ -98,7 +98,7 @@ kill -s SIGINT <puma-pid>
 
 ## Authentication
 
-The API requires all requests to carry with a [jwt](https://jwt.io). Within the token either `user: true` or `admin: true` needs to be set. This will authenticate with either `user` or `admin` privileges respectively. Admins have full access to the API where users can only make `GET` requests.
+The API requires all requests to carry with a [jwt](https://jwt.io). Admin tokens must set the `admin` flag to `true` within their body. All other valid tokens are assumed to have `user` level privileges. Admins have full `read`/`write` access, where a `user` only has `read` access.
 
 The following `rake` tasks are used to generate tokens with 30 days expiry. Tokens from other sources will be accepted as long as they:
 1. Where signed with the same shared secret,
@@ -109,6 +109,9 @@ As the shared secret is environment dependant, the `RACK_ENV` must be set within
 ```
 # Set the rack environment
 export RACK_ENV=production
+
+# Generate a user token
+rake token:admin
 
 # Generate a user token
 rake token:user
