@@ -12,7 +12,7 @@ WorkingDirectory=/opt/flight/opt/nodeattr-server
 
 # The application must be fully configured within the user's environment OR
 # within 'config/application.yaml'
-ExecStart=/opt/flight/opt/nodeattr-server/bin/puma -p 6301 -e production -d \
+ExecStart=/opt/flight/bin/flexec bundle exec puma -p 6301 -e production \
             --redirect-stdout /opt/flight/log/nodeattr-server.log \
             --redirect-stderr /opt/flight/log/nodeattr-server.log
 
