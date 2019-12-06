@@ -35,7 +35,7 @@ bundle install --without development test --path vendor
 bin/bundle install --without development test --path vendor
 ```
 
-Additional configuration is required for the `aws` and `az` command lines to work. Please refer to there reference documents on how to install them. This service assumes they have been pre installed and configured with the appropriate credentials.
+The application connects to a `mongodb` server running on localhost by default. [Refer here how to install mongodb](https://docs.mongodb.com/manual/installation/).
 
 ### Configuration
 
