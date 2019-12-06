@@ -28,6 +28,7 @@
 #===============================================================================
 
 ENV['RACK_ENV'] = 'test'
+ENV['jwt_shared_secret'] = 'SOME_TEST_TOKEN'
 
 require 'rake'
 load File.expand_path('../Rakefile', __dir__)
