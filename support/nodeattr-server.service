@@ -4,18 +4,19 @@ Requires=network.target
 Wants=mongod.service
 
 [Service]
-Type=simple
+Type=forking
 User=root
-
-# The working directory needs to be where the application has been installed
+PIDFile=/opt/flight/opt/nodeattr-server/var/puma.pid
+Environment=PATH=/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/opt/flight/bin
+EnvironmentFile=/opt/flight/etc/nodeattr-server.conf
 WorkingDirectory=/opt/flight/opt/nodeattr-server
-
-# The application must be fully configured within the user's environment OR
-# within 'config/application.yaml'
-ExecStart=/opt/flight/bin/flexec bundle exec puma -p 6301 -e production \
-            --redirect-stdout /opt/flight/log/nodeattr-server.log \
-            --redirect-stderr /opt/flight/log/nodeattr-server.log
-
+ExecStart=/bin/sh -c ' \
+  bin/puma -d -e production \
+    --redirect-append \
+    --redirect-stdout /opt/flight/log/nodeattr-server.log \
+    --redirect-stderr /opt/flight/log/nodeattr-server.log \
+'
+ExecStop=/opt/flight/opt/nodeattr-server/bin/pumactl stop
 Restart=always
 
 [Install]

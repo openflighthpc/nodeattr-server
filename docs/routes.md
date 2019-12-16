@@ -1,6 +1,6 @@
 # API and Routes Documentation
 
-This API broadly conforms the [JSON:API Specifications](https://jsonapi.org/). The major deviation is the each of the `cluster`, `group`, and `node` resource have a "fuzzy__id" in addition to a alphanumeric `id`. The form this "fuzzy_id" takes depends on the section as documented bellow. The `id` and "fuzzy_id" may be used interchangeable but with the following caveats:
+This API broadly conforms the [JSON:API Specifications](https://jsonapi.org/). The major deviation is the each of the `cluster`, `group`, and `node` resource have a "fuzzy_id" in addition to a alphanumeric `id`. The form this "fuzzy_id" takes depends on the section as documented bellow. The `id` and "fuzzy_id" may be used interchangeable but with the following caveats:
 1. The `id` is static to the resource (without preforming delete/recreate), and
 2. The "fuzzy_id" is not guaranteed to be consistent and may change without notice.
 

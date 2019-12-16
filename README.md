@@ -74,26 +74,36 @@ rake db:mongoid:create_indexes
 rake db:mongoid:remove_indexes
 ```
 
-### Setting Up Systemd
+### Integrating with OpenFlightHPC/FlightRunway
 
-A basic `systemd` unit file can be found [here](support/nodeattr-server.service). The unit file will need to be tweaked according to where the application has been installed/configured. The unit needs to be stored within `/etc/systemd/system`.
+The [provided systemd unit file](support/nodeattr-server.service) has been designed to integrate with the `OpenFlightHPC` [flight-runway](https://github.com/openflighthpc/flight-runway) package. The following preconditions must be satisfied for the unit file to work:
+1. `OpenFlightHPC` `flight-runway` must be installed,
+2. The server must be installed within `/otp/flight/opt/nodeattr-server`,
+3. The log directory must exist: `/opt/flight/log`, and
+4. The configuration file must exist: `/opt/flight/etc/nodeattr-server.conf`.
 
-*NOTE:* The logging directory must exist, otherwise the app will crash when it receives its first request
+The configuration file will be loaded into the environment by `systemd` and can be used to override values within `config/application.yaml`. This is the recommended way to set the custom configuration values and provides the following benefits:
+1. The config will be preserved on update,
+2. It keeps the secret keys separate from the code base, and
+3. It eliminates the need to source a `bashrc` in order to setup the environment.
 
 ## Starting the Server
 
 The `puma` server daemon can be started manually with:
 
 ```
-bin/puma -p <port> -e production -d
+bin/puma -p <port> -e production -d \
+          --redirect-append \
+          --redirect-stdout <stdout-log-file-path> \
+          --redirect-stderr <stderr-log-file-path>
 ```
 
 ## Stopping the Server
 
-The `puma` server daemon can be stopped manually by sending an interrupt:
+The `pumactl` command can be used to preform various start/stop/restart actions. Assuming that `systemd` hasn't been setup, the following will stop the server:
 
 ```
-kill -s SIGINT <puma-pid>
+bin/pumactl stop
 ```
 
 ## Authentication
